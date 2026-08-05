@@ -1,0 +1,13 @@
+@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  --color-primary: #5f6FFF;
+}
+
+body {
+  @apply bg-[#F8F9FD] text-gray-800 dark:bg-gray-950 dark:text-gray-100 transition-colors duration-300;
+  font-family: 'Outfit', sans-serif;
+}
+
