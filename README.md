@@ -39,14 +39,15 @@ This project was built to demonstrate proficiency in creating complex, real-worl
 - **Frontend Environment**: React.js (Vite), TailwindCSS, React Router DOM, Context API for state management.
 - **Backend Environment**: Node.js, Express.js RESTful API architecture.
 - **Database**: MongoDB (Mongoose ORM) for scalable document storage.
-- **Authentication**: JWT (JSON Web Tokens) with Role-Based Access Control (RBAC) across three distinct user types (User, Doctor, Admin).
+- **Authentication & Sessions**: Secure JWT (JSON Web Tokens) implementation coupled with `localStorage` for persistent, stateless user sessions across Role-Based Access Control (RBAC) layers (User, Doctor, Admin).
 - **Storage**: Cloudinary integration for handling profile picture uploads and storage.
 - **Payments**: Stripe API integration for handling secure checkout sessions.
 
 ---
 
 ## ⚙️ Security & Best Practices
-- Implemented environment variable protection for all sensitive API keys and database URIs.
-- Robust middleware architecture validating JWTs before granting access to protected routes.
-- Custom logic to prevent unauthorized direct messaging (e.g., verifying payment status before opening chat channels).
-- Adherence to REST principles and scalable folder structure (Controllers, Models, Routes, Middlewares).
+- **Stateless Authentication**: Utilizes encrypted JWTs stored securely in the browser's `localStorage` to maintain sessions without server-side overhead.
+- **Protected Routing**: Robust Express middleware architecture validating JWTs before granting access to sensitive API endpoints.
+- **Environment Protection**: Strict environment variable management for all API keys, database URIs, and JWT secrets.
+- **Data Validation**: Custom logic to prevent unauthorized actions (e.g., verifying Stripe payment status before opening direct messaging channels).
+- **Architecture**: Adherence to REST principles and scalable folder structure (Controllers, Models, Routes, Middlewares).
