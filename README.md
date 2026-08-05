@@ -1,93 +1,52 @@
-# MedSync - Doctor Appointment Booking Platform
+<div align="center">
+  <h1 align="center">MedSync</h1>
+  <p align="center">
+    <strong>A Comprehensive Full-Stack Healthcare Appointment Booking Platform</strong>
+  </p>
+</div>
 
-MedSync is a complete, full-stack appointment booking system featuring a dedicated Admin Panel, Doctor Panel, and a Client Booking interface. It includes robust features like real-time doctor availability management, Stripe payment processing, user complaint ticketing, and a direct messaging system.
+<br />
 
-## 🚀 Features
-- **Client App**: Browse doctors, book appointments, pay via Stripe, send support tickets, and direct-message doctors.
-- **Doctor Panel**: Manage daily appointments, update profile/availability, and chat with clients who have paid for bookings.
-- **Admin Dashboard**: Comprehensive management of all doctors and appointments, resolve support tickets, edit doctor profiles via a dedicated hub, and direct-message doctors.
+## 🏥 Overview
+MedSync is a modern, responsive, and robust full-stack web application designed to bridge the gap between patients, healthcare providers, and administrative staff. It streamlines the entire medical appointment lifecycle, from discovering doctors to booking slots, processing payments, and facilitating post-appointment communication.
 
-## 💻 Tech Stack
-- **Frontend**: React (Vite), TailwindCSS, React Router, Context API
-- **Backend**: Node.js, Express.js
-- **Database**: MongoDB (Mongoose)
-- **Services**: Cloudinary (Image Hosting), Stripe (Payments), JWT (Authentication)
+This project was built to demonstrate proficiency in creating complex, real-world business solutions using modern web technologies, secure authentication, and third-party API integrations.
 
----
+## ✨ Key Features
 
-## 🛠️ Local Setup Instructions
+### 👨‍⚕️ For Patients (Client Interface)
+- **Advanced Filtering**: Browse and search for doctors by name or medical specialty.
+- **Seamless Booking**: Real-time availability checking and slot booking system.
+- **Secure Payments**: Integrated with **Stripe** to handle appointment payments safely.
+- **Direct Messaging**: Built-in chat system allowing patients to securely message doctors (access strictly gated to patients with confirmed, paid appointments).
+- **Support Ticketing**: Dedicated helpdesk system for users to submit complaints or queries.
 
-### 1. Prerequisites
-- Node.js (v18+)
-- MongoDB Atlas Account (or local MongoDB)
-- Cloudinary Account (for image storage)
-- Stripe Account (for payments)
+### 🩺 For Doctors (Doctor Panel)
+- **Appointment Management**: View daily schedules, complete consultations, or cancel appointments.
+- **Profile & Availability**: Real-time toggles to mark themselves as available or unavailable.
+- **Patient Inbox**: A dedicated messaging hub to reply to patient queries and follow up on consultations.
 
-### 2. Install Dependencies
-This is a mono-repo. You need to install dependencies for both the frontend and backend.
-```bash
-# Install backend dependencies
-cd backend
-npm install
-
-# Install frontend dependencies
-cd ../frontend
-npm install
-```
-
-### 3. Environment Variables
-You need to configure your `.env` files before running the apps.
-
-**Backend**:
-1. Navigate to the `backend` folder.
-2. Copy `.env.example` to a new file named `.env`:
-   ```bash
-   cp .env.example .env
-   ```
-3. Fill in your actual API keys and secrets inside `backend/.env`.
-
-**Frontend**:
-1. Navigate to the `frontend` folder.
-2. Copy `.env.example` to a new file named `.env`:
-   ```bash
-   cp .env.example .env
-   ```
-
-### 4. Run the Application
-Open two separate terminal windows.
-
-**Terminal 1 (Backend)**:
-```bash
-cd backend
-npm run dev
-```
-
-**Terminal 2 (Frontend)**:
-```bash
-cd frontend
-npm run dev
-```
+### 🛡️ For Administrators (Admin Dashboard)
+- **Centralized Hub**: A powerful grid dashboard to oversee all registered doctors on the platform.
+- **Deep Editing**: Flyout editing panels to instantly update doctor credentials, fees, and statuses.
+- **Global Messaging**: Admins can directly message any doctor on the platform.
+- **Ticketing Resolution**: An interface to view and resolve incoming user complaints.
 
 ---
 
-## 🚀 Deployment Guide
+## 💻 Tech Stack & Architecture
 
-### Deploying the Backend (Recommended: Render)
-1. Push this repository to GitHub.
-2. Create a new "Web Service" on [Render.com](https://render.com).
-3. Connect your GitHub repository.
-4. Set the **Root Directory** to `backend`.
-5. Set the **Build Command** to `npm install`.
-6. Set the **Start Command** to `npm start`.
-7. Add all the environment variables from your `backend/.env` file into the Render dashboard.
-8. Click Deploy.
+- **Frontend Environment**: React.js (Vite), TailwindCSS, React Router DOM, Context API for state management.
+- **Backend Environment**: Node.js, Express.js RESTful API architecture.
+- **Database**: MongoDB (Mongoose ORM) for scalable document storage.
+- **Authentication**: JWT (JSON Web Tokens) with Role-Based Access Control (RBAC) across three distinct user types (User, Doctor, Admin).
+- **Storage**: Cloudinary integration for handling profile picture uploads and storage.
+- **Payments**: Stripe API integration for handling secure checkout sessions.
 
-### Deploying the Frontend (Recommended: Vercel)
-1. Go to [Vercel.com](https://vercel.com) and click "Add New Project".
-2. Import this GitHub repository.
-3. Set the **Framework Preset** to `Vite`.
-4. Set the **Root Directory** to `frontend`.
-5. In the Environment Variables section, add `VITE_BACKEND_URL` and set its value to your newly deployed Render backend URL (e.g., `https://medsync-api.onrender.com`).
-6. Click Deploy.
+---
 
-*(Note: The `vercel.json` file is already included in the `frontend` folder to automatically handle React Router rewrites).*
+## ⚙️ Security & Best Practices
+- Implemented environment variable protection for all sensitive API keys and database URIs.
+- Robust middleware architecture validating JWTs before granting access to protected routes.
+- Custom logic to prevent unauthorized direct messaging (e.g., verifying payment status before opening chat channels).
+- Adherence to REST principles and scalable folder structure (Controllers, Models, Routes, Middlewares).
