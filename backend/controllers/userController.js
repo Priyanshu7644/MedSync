@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import validator from 'validator';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
@@ -39,15 +40,15 @@ const registerUser = async (req, res) => {
         const userData = {
             name,
             email,
-            password: hashedPassword,
+            password: hashedPassword
         }
 
         const newUser = new userModel(userData);
         const user = await newUser.save();
 
         const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
-
         res.json({ success: true, token });
+
     } catch (error) {
         console.log(error);
         res.json({ success: false, message: error.message });
@@ -115,54 +116,119 @@ const updateProfile = async (req, res) => {
     }
 }
 
-// API to book appointment
+// API to book appointment with Multi-Layered Defense (Atomic Check-and-Set, Transactions, Database Unique Constraints)
 const bookAppointment = async (req, res) => {
+    let session = null;
+    let sessionStarted = false;
+
     try {
         const { userId, docId, slotDate, slotTime } = req.body;
 
-        const docData = await doctorModel.findById(docId).select('-password');
-        if (!docData.available) {
-            return res.json({ success: false, message: 'Doctor not available' });
+        if (!userId || !docId || !slotDate || !slotTime) {
+            return res.json({ success: false, message: 'All booking details (user, doctor, date, time) are required' });
         }
 
-        let slots_booked = docData.slots_booked || {};
-        if (slots_booked[slotDate]) {
-            if (slots_booked[slotDate].includes(slotTime)) {
-                return res.json({ success: false, message: 'Slot not available' });
-            } else {
-                slots_booked[slotDate].push(slotTime);
-            }
-        } else {
-            slots_booked[slotDate] = [];
-            slots_booked[slotDate].push(slotTime);
-        }
-
+        // 1. Verify User existence and block status
         const userData = await userModel.findById(userId).select('-password');
+        if (!userData) {
+            return res.json({ success: false, message: 'User not found' });
+        }
         if (userData.isBlocked) {
             return res.json({ success: false, message: 'You have been blocked from booking appointments' });
         }
 
+        // 2. Initiate Mongoose Session for ACID Multi-Document Transaction (if replica set is active)
+        const topologyType = mongoose.connection?.client?.topology?.description?.type;
+        const supportsTransactions = topologyType === 'ReplicaSetWithPrimary' || topologyType === 'Sharded';
+
+        if (supportsTransactions) {
+            try {
+                session = await mongoose.startSession();
+                session.startTransaction();
+                sessionStarted = true;
+            } catch (txErr) {
+                session = null;
+                sessionStarted = false;
+            }
+        }
+
+        const opts = sessionStarted ? { session } : {};
+        const slotField = `slots_booked.${slotDate}`;
+
+        // 3. LAYER 1: ATOMIC CHECK-AND-SET (findOneAndUpdate with slot availability condition)
+        // Evaluates doctor availability and slot non-existence in a single atomic database operation
+        const updatedDoctor = await doctorModel.findOneAndUpdate(
+            {
+                _id: docId,
+                available: true,
+                [slotField]: { $ne: slotTime } // Atomic condition: slot MUST NOT already contain slotTime
+            },
+            {
+                $push: { [slotField]: slotTime } // Atomic claim of the slot
+            },
+            { new: true, ...opts }
+        );
+
+        if (!updatedDoctor) {
+            if (sessionStarted) await session.abortTransaction();
+            return res.json({ success: false, message: 'Slot already booked or doctor is currently unavailable' });
+        }
+
+        // 4. LAYER 2: PERSIST APPOINTMENT DOCUMENT
+        const docData = updatedDoctor.toObject ? updatedDoctor.toObject() : { ...updatedDoctor };
+        delete docData.password;
         delete docData.slots_booked;
+
         const appointmentData = {
             userId,
             docId,
             userData,
             docData,
-            amount: docData.fees,
+            amount: updatedDoctor.fees,
             slotTime,
             slotDate,
             date: Date.now()
-        }
+        };
 
         const newAppointment = new appointmentModel(appointmentData);
-        await newAppointment.save();
+        await newAppointment.save(opts);
 
-        await doctorModel.findByIdAndUpdate(docId, { slots_booked });
+        // 5. LAYER 3: COMMIT TRANSACTION (All-or-Nothing Execution)
+        if (sessionStarted) {
+            await session.commitTransaction();
+        }
 
-        res.json({ success: true, message: "Appointment Booked" });
+        return res.json({ success: true, message: "Appointment Booked Successfully", appointmentId: newAppointment._id });
+
     } catch (error) {
-        console.log(error);
-        res.json({ success: false, message: error.message });
+        console.log("Booking error:", error);
+
+        // Rollback Transaction or Atomic Compensation
+        if (sessionStarted && session) {
+            try { await session.abortTransaction(); } catch (e) {}
+        } else if (req.body.docId && req.body.slotDate && req.body.slotTime) {
+            // Standalone rollback compensation: remove claimed slot if appointment creation failed
+            try {
+                const slotField = `slots_booked.${req.body.slotDate}`;
+                await doctorModel.findByIdAndUpdate(req.body.docId, {
+                    $pull: { [slotField]: req.body.slotTime }
+                });
+            } catch (e) {}
+        }
+
+        // LAYER 4: DATABASE LEVEL UNIQUE CONSTRAINT REJECTION (E11000)
+        if (error.code === 11000) {
+            return res.json({
+                success: false,
+                message: 'Slot already booked by another patient (Concurrency Constraint). Please select another slot.'
+            });
+        }
+
+        return res.json({ success: false, message: error.message });
+    } finally {
+        if (session) {
+            session.endSession();
+        }
     }
 }
 
@@ -241,29 +307,32 @@ const verifyStripe = async (req, res) => {
     }
 }
 
-// API to cancel appointment
+// API to cancel appointment (Atomic Slot Release)
 const cancelAppointment = async (req, res) => {
     try {
         const { userId, appointmentId } = req.body;
         const appointmentData = await appointmentModel.findById(appointmentId);
 
-        if (appointmentData.userId !== userId) {
+        if (!appointmentData) {
+            return res.json({ success: false, message: 'Appointment not found' });
+        }
+
+        if (String(appointmentData.userId) !== String(userId)) {
             return res.json({ success: false, message: 'Unauthorized action' });
+        }
+
+        if (appointmentData.cancelled) {
+            return res.json({ success: false, message: 'Appointment already cancelled' });
         }
 
         await appointmentModel.findByIdAndUpdate(appointmentId, { cancelled: true });
 
-        // releasing doctor slot
+        // Atomic release of doctor slot
         const { docId, slotDate, slotTime } = appointmentData;
-        const docData = await doctorModel.findById(docId);
-        
-        let slots_booked = docData.slots_booked || {};
-
-        if (slots_booked[slotDate]) {
-            slots_booked[slotDate] = slots_booked[slotDate].filter(e => e !== slotTime);
-        }
-        
-        await doctorModel.findByIdAndUpdate(docId, { slots_booked });
+        const slotField = `slots_booked.${slotDate}`;
+        await doctorModel.findByIdAndUpdate(docId, {
+            $pull: { [slotField]: slotTime }
+        });
 
         res.json({ success: true, message: 'Appointment Cancelled' });
     } catch (error) {

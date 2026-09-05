@@ -69,18 +69,30 @@ const appointmentComplete = async (req, res) => {
     }
 }
 
-// API to cancel appointment for doctor panel
+// API to cancel appointment for doctor panel (Atomic Slot Release)
 const appointmentCancel = async (req, res) => {
     try {
         const { docId, appointmentId } = req.body;
         const appointmentData = await appointmentModel.findById(appointmentId);
 
-        if (appointmentData && appointmentData.docId === docId) {
-            await appointmentModel.findByIdAndUpdate(appointmentId, { cancelled: true });
-            return res.json({ success: true, message: 'Appointment Cancelled' });
-        } else {
-            return res.json({ success: false, message: 'Cancellation Failed' });
+        if (!appointmentData || String(appointmentData.docId) !== String(docId)) {
+            return res.json({ success: false, message: 'Cancellation Failed: Appointment not found' });
         }
+
+        if (appointmentData.cancelled) {
+            return res.json({ success: false, message: 'Appointment already cancelled' });
+        }
+
+        await appointmentModel.findByIdAndUpdate(appointmentId, { cancelled: true });
+
+        // Atomic release of doctor slot
+        const { slotDate, slotTime } = appointmentData;
+        const slotField = `slots_booked.${slotDate}`;
+        await doctorModel.findByIdAndUpdate(docId, {
+            $pull: { [slotField]: slotTime }
+        });
+
+        return res.json({ success: true, message: 'Appointment Cancelled' });
     } catch (error) {
         console.log(error);
         res.json({ success: false, message: error.message });

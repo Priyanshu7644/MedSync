@@ -12,7 +12,13 @@ const appointmentSchema = new mongoose.Schema({
   cancelled: { type: Boolean, default: false },
   payment: { type: Boolean, default: false },
   isCompleted: { type: Boolean, default: false }
-})
+}, { timestamps: true });
+
+// Enforce unique compound index at the database level for active appointments to prevent double-booking
+appointmentSchema.index(
+  { docId: 1, slotDate: 1, slotTime: 1 },
+  { unique: true, partialFilterExpression: { cancelled: false } }
+);
 
 const appointmentModel = mongoose.models.appointment || mongoose.model('appointment', appointmentSchema);
 export default appointmentModel;
