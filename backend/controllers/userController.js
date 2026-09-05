@@ -103,9 +103,8 @@ const updateProfile = async (req, res) => {
         await userModel.findByIdAndUpdate(userId, { name, phone, address: JSON.parse(address), dob, gender });
 
         if (imageFile) {
-            // upload image to cloudinary
-            const imageUpload = await cloudinary.uploader.upload(imageFile.path, { resource_type: 'image' });
-            const imageUrl = imageUpload.secure_url;
+            // Upload to local storage
+            const imageUrl = `${req.protocol}://${req.get('host')}/uploads/${imageFile.filename}`;
             await userModel.findByIdAndUpdate(userId, { image: imageUrl });
         }
 
@@ -139,7 +138,11 @@ const bookAppointment = async (req, res) => {
         }
 
         const userData = await userModel.findById(userId).select('-password');
+        if (userData.isBlocked) {
+            return res.json({ success: false, message: 'You have been blocked from booking appointments' });
+        }
 
+        delete docData.slots_booked;
         const appointmentData = {
             userId,
             docId,
@@ -314,17 +317,29 @@ const userSendMessage = async (req, res) => {
     try {
         const { userId, docId, text } = req.body;
         
-        // Security constraint: Check for paid appointment
-        const hasPaidAppointment = await appointmentModel.findOne({ userId, docId, payment: true });
+        // Security constraint: Check for paid appointment that is NOT completed
+        const hasPaidAppointment = await appointmentModel.findOne({ userId, docId, payment: true, isCompleted: false, cancelled: false });
         
         if (!hasPaidAppointment) {
-            return res.json({ success: false, message: 'You can only message doctors after a paid appointment.' });
+            return res.json({ success: false, message: 'You can only message doctors with an active, paid appointment.' });
+        }
+
+        // Check if user is blocked
+        const userData = await userModel.findById(userId);
+        if (userData && userData.isBlocked) {
+            return res.json({ success: false, message: 'You have been blocked from sending messages.' });
+        }
+
+        let attachmentUrl = "";
+        if (req.file) {
+            attachmentUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
         }
 
         const newMessage = new messageModel({
             senderId: userId,
             receiverId: docId,
-            text,
+            text: text || "",
+            attachment: attachmentUrl,
             date: Date.now()
         });
         await newMessage.save();

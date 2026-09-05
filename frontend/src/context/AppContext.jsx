@@ -86,9 +86,19 @@ const AppContextProvider = (props) => {
     return [];
   }
 
-  const userSendMessage = async (docId, text) => {
+  const userSendMessage = async (docId, text, file = null) => {
     try {
-      const { data } = await axios.post(`${backendUrl}/api/user/send-message`, { docId, text }, { headers: { token } });
+      let payload = { docId, text };
+      let headers = { token };
+      
+      if (file) {
+        payload = new FormData();
+        payload.append('docId', docId);
+        payload.append('text', text);
+        payload.append('attachment', file);
+      }
+
+      const { data } = await axios.post(`${backendUrl}/api/user/send-message`, payload, { headers });
       if (data.success) {
         getUserMessages(docId);
         return true;

@@ -4,6 +4,7 @@ import doctorModel from '../models/doctorModel.js';
 import appointmentModel from '../models/appointmentModel.js';
 import complaintModel from '../models/complaintModel.js';
 import messageModel from '../models/messageModel.js';
+import userModel from '../models/userModel.js';
 import bcrypt from 'bcrypt';
 
 // API for admin login
@@ -38,9 +39,13 @@ const addDoctor = async (req, res) => {
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
-        // upload image to cloudinary
-        const imageUpload = await cloudinary.uploader.upload(imageFile.path, { resource_type: "image" });
-        const imageUrl = imageUpload.secure_url;
+        // Upload image to local storage or use default
+        let imageUrl = '';
+        if (imageFile) {
+            imageUrl = `${req.protocol}://${req.get('host')}/uploads/${imageFile.filename}`;
+        } else {
+            imageUrl = `${req.protocol}://${req.get('host')}/uploads/default_doctor.jpg`;
+        }
 
         const doctorData = {
             name,
@@ -156,10 +161,17 @@ const updateDoctorProfileAdmin = async (req, res) => {
 const adminSendMessage = async (req, res) => {
     try {
         const { docId, text } = req.body;
+
+        let attachmentUrl = "";
+        if (req.file) {
+            attachmentUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
+        }
+
         const newMessage = new messageModel({
             senderId: 'admin',
             receiverId: docId,
-            text,
+            text: text || "",
+            attachment: attachmentUrl,
             date: Date.now()
         });
         await newMessage.save();
@@ -187,4 +199,16 @@ const adminGetMessages = async (req, res) => {
     }
 }
 
-export { addDoctor, loginAdmin, allDoctors, appointmentsAdmin, appointmentCancel, allComplaintsAdmin, resolveComplaint, updateDoctorProfileAdmin, adminSendMessage, adminGetMessages }
+// API to block/unblock patient
+const blockPatient = async (req, res) => {
+    try {
+        const { userId, isBlocked } = req.body;
+        await userModel.findByIdAndUpdate(userId, { isBlocked });
+        res.json({ success: true, message: isBlocked ? 'Patient blocked' : 'Patient unblocked' });
+    } catch (error) {
+        console.log(error);
+        res.json({ success: false, message: error.message });
+    }
+}
+
+export { addDoctor, loginAdmin, allDoctors, appointmentsAdmin, appointmentCancel, allComplaintsAdmin, resolveComplaint, updateDoctorProfileAdmin, adminSendMessage, adminGetMessages, blockPatient }

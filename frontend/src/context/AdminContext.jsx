@@ -110,11 +110,37 @@ const AdminContextProvider = (props) => {
     }
   }
 
-  const adminSendMessage = async (docId, text) => {
+  const adminSendMessage = async (docId, text, file = null) => {
     try {
-      const { data } = await axios.post(`${backendUrl}/api/admin/send-message`, { docId, text }, { headers: { aToken } });
+      let payload = { docId, text };
+      let headers = { aToken };
+      
+      if (file) {
+        payload = new FormData();
+        payload.append('docId', docId);
+        payload.append('text', text);
+        payload.append('attachment', file);
+      }
+
+      const { data } = await axios.post(`${backendUrl}/api/admin/send-message`, payload, { headers });
       if (data.success) {
         adminGetMessages(docId);
+        return true;
+      } else {
+        toast.error(data.message);
+        return false;
+      }
+    } catch (error) {
+      toast.error(error.message);
+      return false;
+    }
+  }
+
+  const blockPatient = async (userId, isBlocked) => {
+    try {
+      const { data } = await axios.post(`${backendUrl}/api/admin/block-patient`, { userId, isBlocked }, { headers: { aToken } });
+      if (data.success) {
+        toast.success(data.message);
         return true;
       } else {
         toast.error(data.message);
@@ -143,7 +169,8 @@ const AdminContextProvider = (props) => {
     messages,
     setMessages,
     adminGetMessages,
-    adminSendMessage
+    adminSendMessage,
+    blockPatient
   }
 
   return (

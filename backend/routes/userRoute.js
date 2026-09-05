@@ -16,7 +16,7 @@ userRouter.post('/verify-stripe', authUser, verifyStripe);
 userRouter.post('/cancel-appointment', authUser, cancelAppointment);
 userRouter.post('/submit-complaint', authUser, submitComplaint);
 userRouter.get('/complaints', authUser, listComplaints);
-userRouter.post('/send-message', authUser, userSendMessage);
+userRouter.post('/send-message', upload.single('attachment'), authUser, userSendMessage);
 userRouter.post('/get-messages', authUser, userGetMessages);
 
 export default userRouter;

@@ -1,13 +1,20 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap');
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
 @custom-variant dark (&:is(.dark *));
 
 @theme {
-  --color-primary: #5f6FFF;
+  --color-primary: #00311e;
+  --color-pine: #00311e;
+  --color-beige: #fef7e5;
+  --color-charcoal: #202833;
+  --color-pearl: #EAE0C8;
 }
 
 body {
-  @apply bg-[#F8F9FD] text-gray-800 dark:bg-gray-950 dark:text-gray-100 transition-colors duration-300;
+  @apply bg-[#fef7e5] text-[#00311e] dark:bg-[#202833] dark:text-[#EAE0C8] transition-colors duration-300;
   font-family: 'Outfit', sans-serif;
 }
+
+
+
 

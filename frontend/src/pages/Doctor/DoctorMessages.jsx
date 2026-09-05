@@ -2,10 +2,12 @@ import React, { useContext, useEffect, useState } from 'react';
 import { DoctorContext } from '../../context/DoctorContext';
 
 const DoctorMessages = () => {
-    const { dtoken, appointments, getAppointments, messages, doctorGetMessages, doctorSendMessage, profileData } = useContext(DoctorContext);
+    const { dtoken, appointments, getAppointments, messages, doctorGetMessages, doctorSendMessage, profileData, blockPatient } = useContext(DoctorContext);
     
     const [selectedContact, setSelectedContact] = useState(null);
     const [text, setText] = useState('');
+    const [chatFile, setChatFile] = useState(null);
+    const [isBlocked, setIsBlocked] = useState(false);
 
     useEffect(() => {
         if (dtoken) {
@@ -24,6 +26,13 @@ const DoctorMessages = () => {
         return () => clearInterval(interval);
     }, [dtoken]);
 
+    useEffect(() => {
+        if (selectedContact) {
+            const app = appointments.find(a => a.userData?._id === selectedContact);
+            setIsBlocked(app?.userData?.isBlocked || false);
+        }
+    }, [selectedContact, appointments]);
+
     // Build a map of user data from appointments for easy lookup
     const userMap = {
         'admin': { name: 'System Admin', image: 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png' }
@@ -33,7 +42,8 @@ const DoctorMessages = () => {
         if (app.userData && app.userData._id) {
             userMap[app.userData._id] = {
                 name: app.userData.name,
-                image: app.userData.image
+                image: app.userData.image,
+                isBlocked: app.userData.isBlocked
             };
         }
     });
@@ -43,11 +53,8 @@ const DoctorMessages = () => {
     const conversations = {};
 
     messages.forEach(msg => {
-        // Find who the other person is
         let contactId = msg.senderId === docId ? msg.receiverId : msg.senderId;
         
-        // If we don't know the docId yet (profileData not loaded), try to infer it
-        // A message to 'admin' implies sender is doc
         if (!docId) {
             contactId = msg.senderId === 'admin' ? msg.senderId : 
                        (msg.receiverId === 'admin' ? msg.receiverId : 
@@ -67,97 +74,180 @@ const DoctorMessages = () => {
 
     const handleSendMessage = async (e) => {
         e.preventDefault();
-        if (!text.trim() || !selectedContact) return;
-        const success = await doctorSendMessage(selectedContact, text);
+        if ((!text.trim() && !chatFile) || !selectedContact || isBlocked) return;
+        const success = await doctorSendMessage(selectedContact, text, chatFile);
         if (success) {
             setText('');
+            setChatFile(null);
+        }
+    }
+
+    const handleBlockUser = async () => {
+        if (!selectedContact) return;
+        const success = await blockPatient(selectedContact, !isBlocked);
+        if (success) {
+            setIsBlocked(!isBlocked);
+            getAppointments();
         }
     }
 
     return (
-        <div className='m-5 flex flex-col md:flex-row gap-6 h-[80vh] transition-colors'>
-            {/* Contacts Sidebar */}
-            <div className='w-full md:w-1/3 bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg shadow-sm overflow-hidden flex flex-col'>
-                <div className='p-4 border-b dark:border-gray-700 bg-gray-50 dark:bg-gray-900'>
-                    <h2 className='text-lg font-medium text-gray-700 dark:text-white'>Conversations</h2>
-                </div>
-                <div className='flex-1 overflow-y-auto'>
-                    {contactList.length === 0 ? (
-                        <p className='p-6 text-center text-sm text-gray-500'>No active conversations.</p>
-                    ) : (
-                        contactList.map((contact, index) => {
-                            const lastMsg = contact.messages[contact.messages.length - 1];
-                            const uData = userMap[contact.id] || { name: 'Unknown User', image: 'https://cdn-icons-png.flaticon.com/512/149/149071.png' };
-                            return (
-                                <div 
-                                    key={index} 
-                                    onClick={() => setSelectedContact(contact.id)}
-                                    className={`flex items-center gap-3 p-4 border-b dark:border-gray-700 cursor-pointer transition-colors ${selectedContact === contact.id ? 'bg-blue-50 dark:bg-blue-900/20' : 'hover:bg-gray-50 dark:hover:bg-gray-800'}`}
-                                >
-                                    <img src={uData.image} alt="" className='w-10 h-10 rounded-full object-cover bg-gray-100' />
-                                    <div className='flex-1 overflow-hidden'>
-                                        <div className='flex justify-between items-center mb-1'>
-                                            <h3 className='font-medium text-gray-800 dark:text-white truncate'>{uData.name}</h3>
-                                            <span className='text-[10px] text-gray-400'>{new Date(lastMsg.date).toLocaleDateString()}</span>
+        <div className='space-y-6 text-[#00311e] dark:text-[#EAE0C8]'>
+            {/* Header Bar */}
+            <div className='pb-4 border-b border-[#00311e]/15 dark:border-[#EAE0C8]/20'>
+                <h1 className='text-2xl font-bold tracking-tight text-[#00311e] dark:text-[#EAE0C8]'>
+                    Consultation Messages
+                </h1>
+                <p className='text-sm text-[#00311e]/70 dark:text-[#EAE0C8]/70 mt-0.5'>
+                    Direct clinical messaging with booked patients and clinic administration.
+                </p>
+            </div>
+
+            {/* Chat Frame */}
+            <div className='flex flex-col md:flex-row border border-[#00311e]/15 dark:border-[#EAE0C8]/20 rounded-xl bg-white dark:bg-[#181E26] overflow-hidden h-[680px] shadow-sm'>
+                {/* Contacts Sidebar */}
+                <div className='w-full md:w-80 border-b md:border-b-0 md:border-r border-[#00311e]/15 dark:border-[#EAE0C8]/20 flex flex-col bg-[#00311e]/5 dark:bg-[#202833]/50'>
+                    <div className='p-3.5 border-b border-[#00311e]/15 dark:border-[#EAE0C8]/20 flex items-center justify-between'>
+                        <span className='text-xs font-semibold uppercase tracking-wider text-[#00311e]/70 dark:text-[#EAE0C8]/70'>Conversations</span>
+                        <span className='text-[11px] font-medium px-2 py-0.5 rounded-full bg-[#00311e]/10 dark:bg-[#EAE0C8]/10 text-[#00311e] dark:text-[#EAE0C8]'>
+                            {contactList.length}
+                        </span>
+                    </div>
+                    <div className='flex-1 overflow-y-auto divide-y divide-[#00311e]/10 dark:divide-[#EAE0C8]/10'>
+                        {contactList.length === 0 ? (
+                            <div className='p-8 text-center text-[#00311e]/50 dark:text-[#EAE0C8]/50 space-y-1'>
+                                <p className='text-xs font-medium'>No active conversations</p>
+                                <p className='text-[11px]'>New messages will appear here.</p>
+                            </div>
+                        ) : (
+                            contactList.map((contact, index) => {
+                                const lastMsg = contact.messages[contact.messages.length - 1];
+                                const uData = userMap[contact.id] || { name: 'Unknown User', image: 'https://cdn-icons-png.flaticon.com/512/149/149071.png' };
+                                const isSelected = selectedContact === contact.id;
+                                return (
+                                    <div 
+                                        key={index} 
+                                        onClick={() => setSelectedContact(contact.id)}
+                                        className={`flex items-center gap-3 p-3.5 cursor-pointer transition ${
+                                            isSelected 
+                                                ? 'bg-[#00311e]/15 dark:bg-[#202833] text-[#00311e] dark:text-[#EAE0C8]' 
+                                                : 'hover:bg-[#00311e]/5 dark:hover:bg-[#EAE0C8]/5'
+                                        }`}
+                                    >
+                                        <img src={uData.image} alt="" className='w-9 h-9 rounded-full object-cover shrink-0' />
+                                        <div className='flex-1 overflow-hidden min-w-0'>
+                                            <div className='flex justify-between items-center mb-0.5'>
+                                                <h3 className={`font-semibold text-xs truncate ${isSelected ? 'text-[#00311e] dark:text-[#EAE0C8]' : 'text-[#00311e]/80 dark:text-[#EAE0C8]/80'}`}>{uData.name}</h3>
+                                                <span className='text-[10px] text-[#00311e]/50 dark:text-[#EAE0C8]/50'>{new Date(lastMsg.date).toLocaleDateString()}</span>
+                                            </div>
+                                            <p className='text-[11px] text-[#00311e]/70 dark:text-[#EAE0C8]/70 truncate'>{lastMsg.text}</p>
                                         </div>
-                                        <p className='text-xs text-gray-500 dark:text-gray-400 truncate'>{lastMsg.text}</p>
+                                    </div>
+                                )
+                            })
+                        )}
+                    </div>
+                </div>
+
+                {/* Chat Main Area */}
+                <div className='flex-1 flex flex-col bg-white dark:bg-[#181E26]'>
+                    {selectedContact ? (
+                        <>
+                            {/* Contact Header */}
+                            <div className='p-3.5 border-b border-[#00311e]/15 dark:border-[#EAE0C8]/20 flex items-center justify-between bg-[#00311e]/5 dark:bg-[#202833]/50'>
+                                <div className='flex items-center gap-3'>
+                                    <img src={(userMap[selectedContact] || {}).image || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'} className='w-8 h-8 rounded-full object-cover shrink-0' alt="" />
+                                    <div>
+                                        <h2 className='font-semibold text-xs text-[#00311e] dark:text-[#EAE0C8]'>{(userMap[selectedContact] || {}).name || 'Unknown User'}</h2>
+                                        <span className='text-[10px] text-[#00311e]/70 dark:text-[#EAE0C8]/70'>Encrypted Patient Session</span>
                                     </div>
                                 </div>
-                            )
-                        })
+                                <button 
+                                    onClick={handleBlockUser}
+                                    className={`text-[11px] font-medium px-2.5 py-1 rounded-md border transition ${
+                                        isBlocked 
+                                            ? 'bg-emerald-50 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800' 
+                                            : 'bg-[#00311e]/5 text-rose-600 dark:bg-[#202833] dark:text-rose-400 border-[#00311e]/15 dark:border-[#EAE0C8]/20 hover:border-rose-300'
+                                    }`}
+                                >
+                                    {isBlocked ? 'Unblock' : 'Block Patient'}
+                                </button>
+                            </div>
+                            
+                            {/* Messages Viewport */}
+                            <div className='flex-1 p-4 overflow-y-auto flex flex-col gap-3 bg-[#00311e]/5 dark:bg-[#141820]'>
+                                {conversations[selectedContact]?.messages.map((msg, index) => {
+                                    const isMe = msg.senderId === docId || (docId === null && msg.receiverId === selectedContact);
+                                    return (
+                                        <div key={index} className={`flex flex-col max-w-[70%] ${isMe ? 'self-end items-end' : 'self-start items-start'}`}>
+                                            <div className={`px-3.5 py-2.5 rounded-xl text-xs leading-relaxed ${
+                                                msg.senderId === 'admin' 
+                                                    ? 'bg-[#00311e]/10 dark:bg-[#202833] text-[#00311e] dark:text-[#EAE0C8] rounded-bl-none border border-[#00311e]/15 dark:border-[#EAE0C8]/20' 
+                                                    : isMe 
+                                                    ? 'bg-[#00311e] dark:bg-[#EAE0C8] text-[#fef7e5] dark:text-[#202833] rounded-br-none font-medium' 
+                                                    : 'bg-white dark:bg-[#202833] border border-[#00311e]/15 dark:border-[#EAE0C8]/20 text-[#00311e] dark:text-[#EAE0C8] rounded-bl-none shadow-sm'
+                                            }`}>
+                                                {msg.attachment && (
+                                                    <div className="mb-2">
+                                                        {msg.attachment.match(/\.(jpeg|jpg|gif|png|webp)/i) ? (
+                                                            <a href={msg.attachment} target="_blank" rel="noopener noreferrer">
+                                                                <img src={msg.attachment} alt="attachment" className="max-w-[200px] rounded-md border border-[#00311e]/20 dark:border-[#EAE0C8]/20" />
+                                                            </a>
+                                                        ) : (
+                                                            <a href={msg.attachment} target="_blank" rel="noopener noreferrer" className={`underline ${isMe ? 'text-[#fef7e5] dark:text-[#202833]' : 'text-[#00311e] dark:text-[#EAE0C8]'}`}>View File</a>
+                                                        )}
+                                                    </div>
+                                                )}
+                                                {msg.text && <div>{msg.text}</div>}
+                                            </div>
+                                            <span className='text-[10px] text-[#00311e]/50 dark:text-[#EAE0C8]/50 mt-1 mx-1'>
+                                                {new Date(msg.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                                            </span>
+                                        </div>
+                                    )
+                                })}
+                            </div>
+
+                            {chatFile && (
+                                <div className="px-4 py-2 bg-[#00311e]/5 dark:bg-[#202833] border-t border-[#00311e]/15 dark:border-[#EAE0C8]/20 flex items-center justify-between text-xs">
+                                    <span className='text-[#00311e] dark:text-[#EAE0C8] font-medium truncate'>Attached: {chatFile.name}</span>
+                                    <button onClick={() => setChatFile(null)} className="text-[#00311e]/70 hover:text-[#00311e] dark:text-[#EAE0C8]/70 dark:hover:text-[#EAE0C8] font-bold ml-2">✕</button>
+                                </div>
+                            )}
+
+                            {/* Input form */}
+                            <form onSubmit={handleSendMessage} className='p-3 border-t border-[#00311e]/15 dark:border-[#EAE0C8]/20 flex gap-2 items-center bg-white dark:bg-[#181E26]'>
+                                <label className='cursor-pointer text-[#00311e]/50 hover:text-[#00311e] dark:text-[#EAE0C8]/50 dark:hover:text-[#EAE0C8] p-1.5 transition'>
+                                    <span className='text-sm'>📎</span>
+                                    <input type="file" className="hidden" onChange={(e) => { if(e.target.files[0]) setChatFile(e.target.files[0]) }} />
+                                </label>
+                                <input 
+                                    type="text" 
+                                    value={text}
+                                    onChange={(e) => setText(e.target.value)}
+                                    placeholder={isBlocked ? "Patient is blocked..." : "Write a clinical message..."}
+                                    disabled={isBlocked}
+                                    className='flex-1 bg-[#00311e]/5 dark:bg-[#202833] border border-[#00311e]/15 dark:border-[#EAE0C8]/20 focus:border-[#00311e] dark:focus:border-[#EAE0C8] rounded-lg px-3.5 py-2 text-xs text-[#00311e] dark:text-[#EAE0C8] placeholder-[#00311e]/40 dark:placeholder-[#EAE0C8]/40 outline-none transition'
+                                />
+                                <button 
+                                    type="submit" 
+                                    disabled={isBlocked}
+                                    className='px-4 py-2 rounded-lg bg-[#00311e] hover:bg-[#00311e]/90 dark:bg-[#EAE0C8] dark:hover:bg-[#EAE0C8]/90 text-[#fef7e5] dark:text-[#202833] text-xs font-semibold transition'
+                                >
+                                    Send
+                                </button>
+                            </form>
+                        </>
+                    ) : (
+                        <div className='m-auto text-[#00311e]/50 dark:text-[#EAE0C8]/50 flex flex-col items-center gap-2 p-8 text-center'>
+                            <p className='text-sm font-semibold text-[#00311e] dark:text-[#EAE0C8]'>Select a conversation</p>
+                            <p className='text-xs text-[#00311e]/60 dark:text-[#EAE0C8]/60'>Choose a patient or system admin to view message history.</p>
+                        </div>
                     )}
                 </div>
             </div>
-
-            {/* Chat Area */}
-            <div className='w-full md:w-2/3 bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg shadow-sm overflow-hidden flex flex-col'>
-                {selectedContact ? (
-                    <>
-                        <div className='p-4 border-b dark:border-gray-700 bg-gray-50 dark:bg-gray-900 flex items-center gap-3'>
-                            <img src={(userMap[selectedContact] || {}).image || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'} className='w-10 h-10 rounded-full object-cover bg-gray-100' alt="" />
-                            <div>
-                                <h2 className='font-medium text-gray-700 dark:text-white'>{(userMap[selectedContact] || {}).name || 'Unknown User'}</h2>
-                            </div>
-                        </div>
-                        
-                        <div className='flex-1 p-4 overflow-y-auto flex flex-col gap-3 bg-gray-50/50 dark:bg-gray-800/50'>
-                            {conversations[selectedContact]?.messages.map((msg, index) => {
-                                const isMe = msg.senderId === docId || (docId === null && msg.receiverId === selectedContact);
-                                return (
-                                    <div key={index} className={`flex flex-col max-w-[75%] ${isMe ? 'self-end items-end' : 'self-start items-start'}`}>
-                                        <div className={`px-4 py-2 rounded-2xl text-sm ${isMe ? 'bg-primary text-white rounded-br-none' : 'bg-white border dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-bl-none shadow-sm'}`}>
-                                            {msg.text}
-                                        </div>
-                                        <span className='text-[10px] text-gray-400 mt-1 mx-1'>
-                                            {new Date(msg.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-                                        </span>
-                                    </div>
-                                )
-                            })}
-                        </div>
-
-                        <form onSubmit={handleSendMessage} className='p-4 border-t dark:border-gray-700 flex gap-2 bg-white dark:bg-gray-900'>
-                            <input 
-                                type="text" 
-                                value={text}
-                                onChange={(e) => setText(e.target.value)}
-                                placeholder="Type your reply..."
-                                className='flex-1 bg-gray-100 dark:bg-gray-800 dark:text-white border-transparent focus:border-primary focus:bg-white dark:focus:bg-gray-700 transition-colors rounded-full px-4 py-2 text-sm outline-none border'
-                            />
-                            <button type="submit" className='bg-primary text-white w-10 h-10 rounded-full flex items-center justify-center hover:bg-blue-600 transition-colors'>
-                                <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>
-                            </button>
-                        </form>
-                    </>
-                ) : (
-                    <div className='m-auto text-gray-400 flex flex-col items-center gap-3'>
-                        <svg className="w-12 h-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
-                        <p>Select a conversation to start chatting</p>
-                    </div>
-                )}
-            </div>
         </div>
-    )
+    );
 }
 
 export default DoctorMessages;

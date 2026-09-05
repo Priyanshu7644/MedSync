@@ -1,7 +1,9 @@
 import doctorModel from '../models/doctorModel.js';
 import appointmentModel from '../models/appointmentModel.js';
 import messageModel from '../models/messageModel.js';
+import userModel from '../models/userModel.js';
 import bcrypt from 'bcrypt';
+import { v2 as cloudinary } from 'cloudinary';
 import jwt from 'jsonwebtoken';
 
 const doctorList = async (req, res) => {
@@ -147,10 +149,17 @@ const updateDoctorProfile = async (req, res) => {
 const doctorSendMessage = async (req, res) => {
     try {
         const { docId, receiverId, text } = req.body;
+        
+        let attachmentUrl = "";
+        if (req.file) {
+            attachmentUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
+        }
+
         const newMessage = new messageModel({
             senderId: docId,
             receiverId,
-            text,
+            text: text || "",
+            attachment: attachmentUrl,
             date: Date.now()
         });
         await newMessage.save();
@@ -178,4 +187,22 @@ const doctorGetMessages = async (req, res) => {
     }
 }
 
-export { doctorList, loginDoctor, doctorAppointments, appointmentComplete, appointmentCancel, doctorDashboard, doctorProfile, updateDoctorProfile, doctorSendMessage, doctorGetMessages }
+// API to block/unblock patient
+const blockPatient = async (req, res) => {
+    try {
+        const { userId, isBlocked } = req.body;
+        // Verify doctor has had an appointment with this user
+        const { docId } = req.body;
+        const appointment = await appointmentModel.findOne({ docId, userId });
+        if (!appointment) {
+            return res.json({ success: false, message: 'Not authorized to block this patient' });
+        }
+        await userModel.findByIdAndUpdate(userId, { isBlocked });
+        res.json({ success: true, message: isBlocked ? 'Patient blocked' : 'Patient unblocked' });
+    } catch (error) {
+        console.log(error);
+        res.json({ success: false, message: error.message });
+    }
+}
+
+export { doctorList, loginDoctor, doctorAppointments, appointmentComplete, appointmentCancel, doctorDashboard, doctorProfile, updateDoctorProfile, doctorSendMessage, doctorGetMessages, blockPatient }

@@ -16,6 +16,7 @@ const Appointment = () => {
 
   // Chat state
   const [chatText, setChatText] = useState('');
+  const [chatFile, setChatFile] = useState(null);
   const [showChat, setShowChat] = useState(false);
 
   const daysOfWeek = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
@@ -78,10 +79,11 @@ const Appointment = () => {
 
   const handleSendMessage = async (e) => {
       e.preventDefault();
-      if (!chatText.trim()) return;
-      const success = await userSendMessage(docId, chatText);
+      if (!chatText.trim() && !chatFile) return;
+      const success = await userSendMessage(docId, chatText, chatFile);
       if (success) {
           setChatText('');
+          setChatFile(null);
       }
   };
 
@@ -119,55 +121,56 @@ const Appointment = () => {
     }
   }
 
-  if (!docInfo) return <div className='py-20 text-center text-gray-500 dark:text-gray-200'>Loading Doctor Data...</div>
+  if (!docInfo) return <div className='py-20 text-center text-[#202833]/70 dark:text-[#EAE0C8]/70'>Loading Doctor Data...</div>
 
   return (
-    <div className='transition-colors'>
+    <div className='py-6 text-[#202833] dark:text-[#EAE0C8] transition-colors'>
       {/* Doctor Details */}
-      <div className='flex flex-col sm:flex-row gap-4'>
-        <div>
-          <img className='bg-primary w-full sm:max-w-72 rounded-lg' src={docInfo.image} alt={docInfo.name} />
+      <div className='flex flex-col sm:flex-row gap-6 items-start'>
+        <div className='w-full sm:max-w-72 bg-[#EAE0C8]/40 dark:bg-[#181E26] border border-[#202833]/15 dark:border-[#EAE0C8]/20 shadow-sm p-1'>
+          <img className='w-full h-72 object-cover object-top' src={docInfo.image} alt={docInfo.name} />
         </div>
-        <div className='flex-1 border border-gray-300 dark:border-gray-700 rounded-lg p-8 py-7 bg-white dark:bg-gray-800 mx-2 sm:mx-0 mt-[-80px] sm:mt-0 shadow-sm transition-colors'>
-          <p className='flex items-center gap-2 text-2xl font-medium text-gray-900 dark:text-white'>
+        <div className='flex-1 border border-[#202833]/15 dark:border-[#EAE0C8]/20 p-8 bg-white/95 dark:bg-[#181E26] shadow-sm transition-colors'>
+          <p className='flex items-center gap-2 text-2xl md:text-3xl font-bold text-[#202833] dark:text-[#EAE0C8]'>
             {docInfo.name} 
-            <span className='text-blue-500 text-sm'>✔</span>
+            <span className='text-green-600 dark:text-green-400 text-sm'>✔</span>
           </p>
-          <div className='flex items-center gap-2 text-sm mt-1 text-gray-600 dark:text-gray-300'>
+          <div className='flex items-center gap-3 text-sm mt-2 text-[#202833]/80 dark:text-[#EAE0C8]/80 font-medium'>
             <p>{docInfo.degree} - {docInfo.speciality}</p>
-            <button className='py-0.5 px-2 border dark:border-gray-600 text-xs rounded-full'>{docInfo.experience}</button>
+            <span className='py-0.5 px-2.5 border border-[#202833]/20 dark:border-[#EAE0C8]/30 text-xs font-semibold uppercase tracking-wider bg-[#EAE0C8]/20 dark:bg-[#202833]/40'>{docInfo.experience}</span>
           </div>
-          <div>
-            <p className='flex items-center gap-1 text-sm font-medium text-gray-900 dark:text-white mt-3'>About</p>
-            <p className='text-sm text-gray-500 dark:text-gray-300 max-w-[700px] mt-1 leading-relaxed'>{docInfo.about}</p>
+          <div className='mt-5 pt-4 border-t border-[#202833]/10 dark:border-[#EAE0C8]/10'>
+            <p className='text-xs font-bold uppercase tracking-wider text-[#202833] dark:text-[#EAE0C8] mb-1'>About</p>
+            <p className='text-sm text-[#202833]/80 dark:text-[#EAE0C8]/80 max-w-[700px] leading-relaxed font-light'>{docInfo.about}</p>
           </div>
-          <p className='text-gray-500 dark:text-gray-400 font-medium mt-4'>
-            Appointment fee: <span className='text-gray-900 dark:text-white'>{currencySymbol}{docInfo.fees}</span>
+          <p className='text-[#202833]/80 dark:text-[#EAE0C8]/80 font-medium mt-6 text-sm'>
+            Appointment fee: <span className='text-[#202833] dark:text-[#EAE0C8] font-bold text-base'>{currencySymbol}{docInfo.fees}</span>
           </p>
         </div>
       </div>
       
       {/* Booking Slots */}
-      <div className='sm:ml-72 sm:pl-4 mt-8 font-medium text-gray-700 dark:text-gray-200 transition-colors'>
-        <p>Booking slots</p>
-        <div className='flex gap-3 items-center w-full overflow-x-auto mt-4 pb-4 no-scrollbar'>
+      <div className='sm:ml-80 sm:pl-2 mt-10 transition-colors'>
+        <p className='text-xs font-bold uppercase tracking-wider text-[#202833] dark:text-[#EAE0C8]'>Select Booking Slot</p>
+        
+        <div className='flex gap-3 items-center w-full overflow-x-auto mt-4 pb-2 no-scrollbar'>
           {docSlots.length > 0 && docSlots.map((item, index) => (
             <div 
               onClick={() => setSlotIndex(index)}
-              className={`text-center py-6 min-w-16 rounded-full cursor-pointer transition-all duration-300 ${slotIndex === index ? 'bg-primary text-white shadow-md' : 'border border-gray-200 dark:border-gray-600 text-gray-500 dark:text-gray-300 hover:border-primary'}`} 
+              className={`text-center py-4 min-w-16 cursor-pointer transition-all duration-300 border ${slotIndex === index ? 'bg-[#202833] text-[#EAE0C8] dark:bg-[#EAE0C8] dark:text-[#202833] border-[#202833] dark:border-[#EAE0C8] font-bold shadow-sm' : 'border-[#202833]/20 dark:border-[#EAE0C8]/30 bg-white/80 dark:bg-[#181E26] text-[#202833]/80 dark:text-[#EAE0C8]/80 hover:border-[#202833] dark:hover:border-[#EAE0C8]'}`} 
               key={index}
             >
-              <p className='text-xs font-light'>{item[0] && daysOfWeek[item[0].datetime.getDay()]}</p>
-              <p className='text-lg font-medium'>{item[0] && item[0].datetime.getDate()}</p>
+              <p className='text-[10px] font-semibold tracking-wider uppercase'>{item[0] && daysOfWeek[item[0].datetime.getDay()]}</p>
+              <p className='text-lg font-bold mt-1'>{item[0] && item[0].datetime.getDate()}</p>
             </div>
           ))}
         </div>
         
-        <div className='flex items-center gap-3 w-full overflow-x-auto mt-4 pb-4 no-scrollbar'>
+        <div className='flex items-center gap-3 w-full overflow-x-auto mt-4 pb-2 no-scrollbar flex-wrap'>
           {docSlots.length > 0 && docSlots[slotIndex].map((item, index) => (
             <p 
               onClick={() => setSlotTime(item.time)}
-              className={`text-sm font-light flex-shrink-0 px-5 py-2 rounded-full cursor-pointer transition-all duration-300 ${item.time === slotTime ? 'bg-primary text-white shadow-md' : 'text-gray-500 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:border-primary'}`} 
+              className={`text-xs uppercase tracking-wider font-semibold px-5 py-2.5 cursor-pointer transition-all duration-300 border ${item.time === slotTime ? 'bg-[#202833] text-[#EAE0C8] dark:bg-[#EAE0C8] dark:text-[#202833] border-[#202833] dark:border-[#EAE0C8] shadow-sm' : 'text-[#202833]/80 dark:text-[#EAE0C8]/80 bg-white/80 dark:bg-[#181E26] border-[#202833]/20 dark:border-[#EAE0C8]/30 hover:border-[#202833] dark:hover:border-[#EAE0C8]'}`} 
               key={index}
             >
               {item.time.toLowerCase()}
@@ -175,62 +178,10 @@ const Appointment = () => {
           ))}
         </div>
         
-        <button onClick={bookAppointment} className='bg-primary text-white text-sm font-light px-14 py-3 rounded-full my-6 hover:bg-blue-600 transition-colors shadow-md'>
-          Book an appointment
+        <button onClick={bookAppointment} className='bg-[#202833] hover:bg-[#161C24] dark:bg-[#EAE0C8] dark:hover:bg-white text-[#EAE0C8] dark:text-[#202833] text-xs font-bold uppercase tracking-wider px-10 py-3.5 my-8 transition-all shadow-sm'>
+          Book an appointment ➔
         </button>
       </div>
-
-      {/* Chat with Doctor Section */}
-      {token && (
-          <div className='mt-16 sm:mt-24 border dark:border-gray-700 rounded-lg overflow-hidden bg-white dark:bg-gray-800 shadow-sm'>
-              <div 
-                  onClick={() => setShowChat(!showChat)}
-                  className='p-4 bg-gray-50 dark:bg-gray-900 border-b dark:border-gray-700 cursor-pointer flex justify-between items-center hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors'
-              >
-                  <div>
-                      <h3 className='text-lg font-medium text-gray-800 dark:text-white'>Message Dr. {docInfo.name}</h3>
-                      <p className='text-xs text-gray-500'>You can chat with the doctor after booking a paid appointment.</p>
-                  </div>
-                  <span className='text-gray-500'>{showChat ? '▲' : '▼'}</span>
-              </div>
-              
-              {showChat && (
-                  <div className='flex flex-col h-[400px]'>
-                      <div className='flex-1 p-4 overflow-y-auto flex flex-col gap-3 bg-gray-50/50 dark:bg-gray-800/50'>
-                          {(!messages || messages.length === 0) ? (
-                              <div className='m-auto text-sm text-gray-400'>No messages yet. Say hello!</div>
-                          ) : (
-                              messages.map((msg, index) => {
-                                  const isMe = msg.senderId !== docId;
-                                  return (
-                                      <div key={index} className={`flex flex-col max-w-[75%] ${isMe ? 'self-end items-end' : 'self-start items-start'}`}>
-                                          <div className={`px-4 py-2 rounded-2xl text-sm ${isMe ? 'bg-primary text-white rounded-br-none' : 'bg-white border dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-bl-none shadow-sm'}`}>
-                                              {msg.text}
-                                          </div>
-                                          <span className='text-[10px] text-gray-400 mt-1 mx-1'>
-                                              {new Date(msg.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-                                          </span>
-                                      </div>
-                                  )
-                              })
-                          )}
-                      </div>
-                      <form onSubmit={handleSendMessage} className='p-4 border-t dark:border-gray-700 flex gap-2 bg-white dark:bg-gray-900'>
-                          <input 
-                              type="text" 
-                              value={chatText}
-                              onChange={(e) => setChatText(e.target.value)}
-                              placeholder="Type your message..."
-                              className='flex-1 bg-gray-100 dark:bg-gray-800 dark:text-white border-transparent focus:border-primary focus:bg-white dark:focus:bg-gray-700 transition-colors rounded-full px-4 py-2 text-sm outline-none border'
-                          />
-                          <button type="submit" className='bg-primary text-white w-10 h-10 rounded-full flex items-center justify-center hover:bg-blue-600 transition-colors'>
-                              <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>
-                          </button>
-                      </form>
-                  </div>
-              )}
-          </div>
-      )}
     </div>
   )
 }

@@ -98,11 +98,38 @@ const DoctorContextProvider = (props) => {
     }
   }
 
-  const doctorSendMessage = async (receiverId, text) => {
+  const doctorSendMessage = async (receiverId, text, file = null) => {
     try {
-      const { data } = await axios.post(`${backendUrl}/api/doctor/send-message`, { receiverId, text }, { headers: { dtoken } });
+      let payload = { receiverId, text };
+      let headers = { dtoken };
+      
+      if (file) {
+        payload = new FormData();
+        payload.append('receiverId', receiverId);
+        payload.append('text', text);
+        payload.append('attachment', file);
+      }
+
+      const { data } = await axios.post(`${backendUrl}/api/doctor/send-message`, payload, { headers });
       if (data.success) {
         doctorGetMessages();
+        return true;
+      } else {
+        toast.error(data.message);
+        return false;
+      }
+    } catch (error) {
+      toast.error(error.message);
+      return false;
+    }
+  }
+
+  const blockPatient = async (userId, isBlocked) => {
+    try {
+      // Find docId from profileData
+      const { data } = await axios.post(`${backendUrl}/api/doctor/block-patient`, { userId, isBlocked, docId: profileData._id }, { headers: { dtoken } });
+      if (data.success) {
+        toast.success(data.message);
         return true;
       } else {
         toast.error(data.message);
@@ -131,7 +158,8 @@ const DoctorContextProvider = (props) => {
     messages,
     setMessages,
     doctorGetMessages,
-    doctorSendMessage
+    doctorSendMessage,
+    blockPatient
   }
 
   return (

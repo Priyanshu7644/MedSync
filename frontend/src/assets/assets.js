@@ -1,20 +1,56 @@
 import hero_img from './hero_img.png'
+import hero_doctor_real from './hero_doctor_real.jpg'
+import about_team_real from './about_team_real.jpg'
+import contact_support_real from './contact_support_real.jpg'
 import doc1 from './doc1.png'
 import appointment_img from './appointment_img.png'
 
 export const assets = {
   hero_img,
+  hero_doctor_real,
+  about_team_real,
+  contact_support_real,
   doc1,
   appointment_img,
 }
 
 export const specialityData = [
-    { speciality: 'General physician', image: '🩺' },
-    { speciality: 'Gynecologist', image: '⚕️' },
-    { speciality: 'Dermatologist', image: '🧴' },
-    { speciality: 'Pediatricians', image: '👶' },
-    { speciality: 'Neurologist', image: '🧠' },
-    { speciality: 'Gastroenterologist', image: '🏥' },
+    { 
+        speciality: 'General physician', 
+        image: '🩺',
+        description: 'Primary care for common illnesses, fever, infections, preventative screenings & regular checkups.',
+        conditions: ['Fever & Flu', 'Health Screenings', 'Blood Pressure', 'Diabetes']
+    },
+    { 
+        speciality: 'Gynecologist', 
+        image: '⚕️',
+        description: "Specialized care for women's reproductive health, pregnancy, hormonal balance & maternity wellness.",
+        conditions: ['Pregnancy & Prenatal', 'PCOS & Hormones', 'Women\'s Wellness', 'Pelvic Health']
+    },
+    { 
+        speciality: 'Dermatologist', 
+        image: '🧴',
+        description: 'Diagnosis and clinical treatment for skin conditions, hair fall, acne, rashes & aesthetic dermatology.',
+        conditions: ['Acne & Scars', 'Hair Loss', 'Eczema & Rashes', 'Skin Allergies']
+    },
+    { 
+        speciality: 'Pediatricians', 
+        image: '👶',
+        description: 'Comprehensive medical care for infants, children & teens, including milestone tracking and vaccines.',
+        conditions: ['Childhood Illness', 'Vaccinations', 'Growth Milestones', 'Newborn Care']
+    },
+    { 
+        speciality: 'Neurologist', 
+        image: '🧠',
+        description: 'Specialist care for conditions affecting the brain, spine, nervous system, severe migraines & seizures.',
+        conditions: ['Migraines & Headaches', 'Nerve Pain', 'Seizures & Tremors', 'Spine & Brain Care']
+    },
+    { 
+        speciality: 'Gastroenterologist', 
+        image: '🏥',
+        description: 'Expert care for digestive tract disorders, chronic acid reflux, stomach pain, liver & gut health.',
+        conditions: ['Acid Reflux & GERD', 'Stomach Pain & IBS', 'Liver & Gallbladder', 'Gut Health']
+    },
 ]
 
 export const doctors = [
