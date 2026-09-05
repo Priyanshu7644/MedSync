@@ -14,8 +14,8 @@ function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
   return R * c;
 }
 
-function deg2rad(deg) { 
-  return deg * (Math.PI / 180); 
+function deg2rad(deg) {
+  return deg * (Math.PI / 180);
 }
 
 const CITY_COORDINATES = {
@@ -48,7 +48,7 @@ const getDoctorCoordinates = (doc) => {
     if (!isNaN(lat) && !isNaN(lng)) return { lat, lng };
   }
   const addrStr = `${doc?.address?.line1 || ''} ${doc?.address?.line2 || ''} ${doc?.address?.locality || ''} ${doc?.address?.pincode || ''}`.toLowerCase();
-  
+
   if (addrStr.includes('phagwara') || addrStr.includes('144401')) return { lat: 31.2240, lng: 75.7708 };
   if (addrStr.includes('jalandhar') || addrStr.includes('144001')) return { lat: 31.3260, lng: 75.5762 };
   if (addrStr.includes('ludhiana') || addrStr.includes('141001')) return { lat: 30.9010, lng: 75.8573 };
@@ -68,7 +68,7 @@ const getDoctorCoordinates = (doc) => {
   if (addrStr.includes('40004') || addrStr.includes('westside')) return { lat: 34.0522, lng: -118.2437 };
   if (addrStr.includes('50005') || addrStr.includes('eastside')) return { lat: 41.8781, lng: -87.6298 };
   if (addrStr.includes('60006') || addrStr.includes('northside')) return { lat: 29.7604, lng: -95.3698 };
-  
+
   return null;
 };
 
@@ -238,7 +238,7 @@ const Doctors = () => {
         filtered.sort((a, b) => {
           const distA = a.distance ?? Infinity;
           const distB = b.distance ?? Infinity;
-          
+
           // If distances are close (within 15km of each other), rank higher experience first
           if (Math.abs(distA - distB) <= 15) {
             const expA = parseInt(a.experience) || 0;
@@ -280,7 +280,7 @@ const Doctors = () => {
 
   return (
     <div className='py-6 text-[#00311e] dark:text-[#EAE0C8] transition-colors duration-300'>
-      
+
       {/* Directory Header Banner */}
       <div className='bg-white/95 dark:bg-[#181E26] border border-[#00311e]/15 dark:border-[#EAE0C8]/20 p-6 sm:p-8 lg:p-10 mb-8 shadow-sm'>
         <div className='flex flex-col md:flex-row items-start md:items-center justify-between gap-4'>
@@ -306,12 +306,12 @@ const Doctors = () => {
 
         {/* Universal Search & Location Bar */}
         <div className='mt-6 pt-6 border-t border-[#00311e]/10 dark:border-[#EAE0C8]/10 flex flex-col md:flex-row items-center gap-3'>
-          
+
           {/* Doctor / Speciality input */}
           <div className='relative flex-1 w-full'>
             <div className='flex items-center bg-[#fef7e5]/50 dark:bg-[#202833]/60 border border-[#00311e]/20 dark:border-[#EAE0C8]/25 px-4 py-3 focus-within:border-[#00311e] dark:focus-within:border-[#EAE0C8] transition-all'>
               <span className='text-[#00311e]/70 dark:text-[#EAE0C8]/70 mr-3 text-base'>🔍</span>
-              <input 
+              <input
                 type="text"
                 placeholder="Search by doctor name, specialty, clinical focus..."
                 value={searchDoctor}
@@ -329,14 +329,14 @@ const Doctors = () => {
           {/* Location input */}
           <div className='relative flex-1 w-full'>
             <div className='flex items-center bg-[#fef7e5]/50 dark:bg-[#202833]/60 border border-[#00311e]/20 dark:border-[#EAE0C8]/25 px-4 py-3 focus-within:border-[#00311e] dark:focus-within:border-[#EAE0C8] transition-all'>
-              <button 
+              <button
                 onClick={getUserLocation}
                 className={`mr-3 text-base transition-colors ${isLocating ? 'animate-spin' : 'hover:scale-110'}`}
                 title="Use GPS Location"
               >
                 📍
               </button>
-              <input 
+              <input
                 type="text"
                 placeholder={isLocating ? "Detecting GPS location..." : "City, locality or area (e.g. Mumbai, Delhi, Phagwara)..."}
                 value={isLocating ? "" : searchLocation}
@@ -382,7 +382,7 @@ const Doctors = () => {
                       const mainName = parts[0];
                       const coords = { lat: parseFloat(loc.lat), lng: parseFloat(loc.lon) };
                       return (
-                        <li 
+                        <li
                           key={index}
                           onMouseDown={(e) => {
                             e.preventDefault();
@@ -451,7 +451,7 @@ const Doctors = () => {
                 <button onClick={() => { setSearchLocation(''); setUserCoordinates(null); }} className='hover:opacity-75'>✕</button>
               </span>
             )}
-            <button 
+            <button
               onClick={clearAllFilters}
               className='text-xs underline text-[#00311e]/80 dark:text-[#EAE0C8]/80 hover:text-[#00311e] dark:hover:text-[#EAE0C8] font-bold ml-2'
             >
@@ -463,7 +463,7 @@ const Doctors = () => {
 
       {/* Main Content Layout: Sidebar + Doctor Grid */}
       <div className='flex flex-col lg:flex-row items-start gap-8'>
-        
+
         {/* Mobile Filter Toggle */}
         <button
           className={`lg:hidden w-full py-3 px-4 border border-[#00311e] dark:border-[#EAE0C8] text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-between ${showFilter ? 'bg-[#00311e] text-[#fef7e5] dark:bg-[#EAE0C8] dark:text-[#202833]' : 'bg-white dark:bg-[#181E26]'}`}
@@ -473,8 +473,8 @@ const Doctors = () => {
           <span>{showFilter ? '▲ Hide' : '▼ Filter'}</span>
         </button>
 
-        {/* Sidebar Discipline Filter Menu (Sticky & Pinned) */}
-        <div className={`w-full lg:w-64 lg:sticky lg:top-6 lg:self-start lg:shrink-0 flex-col gap-3 z-20 ${showFilter ? 'flex' : 'hidden lg:flex'}`}>
+        {/* Sidebar Discipline Filter Menu (Natural Flow) */}
+        <div className={`w-full lg:w-64 flex-col gap-3 shrink-0 ${showFilter ? 'flex' : 'hidden lg:flex'}`}>
           <div className='p-3 bg-white/95 dark:bg-[#181E26] border border-[#00311e]/15 dark:border-[#EAE0C8]/20 shadow-sm'>
             <p className='text-[10px] font-bold uppercase tracking-wider text-[#00311e]/60 dark:text-[#EAE0C8]/60 pb-2 border-b border-[#00311e]/10 dark:border-[#EAE0C8]/10 mb-2'>
               Speciality Discipline
@@ -486,8 +486,8 @@ const Doctors = () => {
                   <button
                     key={item.name}
                     onClick={() => {
-                      if (item.name === 'All Doctors') navigate('/doctors', { replace: true, preventScrollReset: true });
-                      else navigate(`/doctors/${item.name}`, { replace: true, preventScrollReset: true });
+                      if (item.name === 'All Doctors') navigate('/doctors');
+                      else navigate(`/doctors/${item.name}`);
                       setShowFilter(false);
                     }}
                     className={`w-full px-3.5 py-2.5 text-left text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-between border ${isSelected ? 'bg-[#00311e] text-[#fef7e5] dark:bg-[#EAE0C8] dark:text-[#202833] border-[#00311e] dark:border-[#EAE0C8] shadow-sm' : 'bg-[#fef7e5]/40 dark:bg-[#202833]/50 text-[#00311e] dark:text-[#EAE0C8] border-transparent hover:border-[#00311e]/30 dark:hover:border-[#EAE0C8]/30'}`}
@@ -509,7 +509,7 @@ const Doctors = () => {
             <p className='text-[#00311e]/70 dark:text-[#EAE0C8]/70 text-[11px] leading-relaxed mb-3'>
               Speak with our healthcare concierge to match you with the right specialist.
             </p>
-            <button 
+            <button
               onClick={() => navigate('/contact')}
               className='w-full py-2 bg-[#00311e]/10 dark:bg-[#EAE0C8]/10 hover:bg-[#00311e] hover:text-[#fef7e5] dark:hover:bg-[#EAE0C8] dark:hover:text-[#202833] text-[10px] font-bold uppercase tracking-wider transition-all border border-[#00311e]/20 dark:border-[#EAE0C8]/20'
             >
@@ -518,8 +518,8 @@ const Doctors = () => {
           </div>
         </div>
 
-        {/* Doctor Profiles Grid (Scrolls independently while sidebar stays static) */}
-        <div className='flex-1 w-full lg:max-h-[calc(100vh-130px)] lg:overflow-y-auto pr-1 lg:pr-3'>
+        {/* Doctor Profiles Grid */}
+        <div className='flex-1 w-full'>
           {filterDoc.length === 0 ? (
             <div className='p-12 text-center bg-white/95 dark:bg-[#181E26] border border-[#00311e]/15 dark:border-[#EAE0C8]/20 shadow-sm space-y-4'>
               <span className='text-4xl block'>🩺</span>
@@ -537,7 +537,7 @@ const Doctors = () => {
           ) : (
             <div className='grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5'>
               {filterDoc.map((item, index) => (
-                <div 
+                <div
                   key={index}
                   onClick={() => { navigate(`/appointment/${item._id}`); window.scrollTo(0, 0); }}
                   className='group bg-white/95 dark:bg-[#181E26] border border-[#00311e]/15 dark:border-[#EAE0C8]/20 shadow-sm hover:border-[#00311e] dark:hover:border-[#EAE0C8] hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col justify-between cursor-pointer overflow-hidden'
@@ -545,13 +545,13 @@ const Doctors = () => {
                   <div>
                     {/* Doctor Photo Holder */}
                     <div className='relative h-56 bg-[#fef7e5]/50 dark:bg-[#202833] overflow-hidden border-b border-[#00311e]/10 dark:border-[#EAE0C8]/15'>
-                      <img 
-                        className='w-full h-full object-cover object-top filter brightness-[0.98] group-hover:scale-105 transition-transform duration-500' 
-                        src={item.image} 
-                        alt={item.name} 
+                      <img
+                        className='w-full h-full object-cover object-top filter brightness-[0.98] group-hover:scale-105 transition-transform duration-500'
+                        src={item.image}
+                        alt={item.name}
                       />
                       <div className='absolute inset-0 bg-gradient-to-t from-[#202833]/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300'></div>
-                      
+
                       {/* Top Badges */}
                       <div className='absolute top-3 left-3 right-3 flex items-center justify-between'>
                         <div className='flex items-center gap-1.5 bg-white/95 dark:bg-[#181E26] px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider border border-[#00311e]/10 dark:border-[#EAE0C8]/20 shadow-sm'>
