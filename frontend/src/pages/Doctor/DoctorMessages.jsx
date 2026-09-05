@@ -22,6 +22,7 @@ const DoctorMessages = () => {
     const [isBlocked, setIsBlocked] = useState(false);
     const [isSending, setIsSending] = useState(false);
 
+    const docId = profileData ? profileData._id : null;
     const messagesContainerRef = useRef(null);
 
     useEffect(() => {
@@ -68,7 +69,6 @@ const DoctorMessages = () => {
         }
     });
 
-    const docId = profileData ? profileData._id : null;
     const conversations = {};
 
     // Ensure admin is always in conversation list
