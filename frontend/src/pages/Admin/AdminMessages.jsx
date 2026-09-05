@@ -89,13 +89,22 @@ const AdminMessages = () => {
     (c.speciality && c.speciality.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
-  // When a contact is selected, fetch their direct messages and mark as seen
+  // When a contact is selected or receives new unread messages while open, fetch and mark as seen
   useEffect(() => {
     if (selectedContact) {
       adminGetMessages(selectedContact);
       adminMarkMessagesSeen(selectedContact);
     }
   }, [selectedContact]);
+
+  useEffect(() => {
+    if (selectedContact) {
+      const hasUnseen = allMessages.some(m => String(m.senderId) === String(selectedContact) && m.receiverId === 'admin' && !m.seen);
+      if (hasUnseen) {
+        adminMarkMessagesSeen(selectedContact);
+      }
+    }
+  }, [allMessages, selectedContact]);
 
   // Combine and deduplicate messages for selectedContact to guarantee 100% recovery of past history
   const currentMessages = useMemo(() => {

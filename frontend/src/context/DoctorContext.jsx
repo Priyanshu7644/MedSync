@@ -100,15 +100,17 @@ const DoctorContextProvider = (props) => {
   const doctorMarkMessagesSeen = async (contactId) => {
     try {
       if (!dtoken || !profileData || !contactId) return;
+      const cIdStr = String(contactId);
+      const myIdStr = String(profileData._id);
 
       // Optimistically mark seen in local state
       setMessages(prev => prev.map(msg => 
-        msg.senderId === contactId && msg.receiverId === profileData._id 
+        String(msg.senderId) === cIdStr && String(msg.receiverId) === myIdStr 
           ? { ...msg, seen: true, seenAt: Date.now() } 
           : msg
       ));
 
-      await axios.post(`${backendUrl}/api/doctor/mark-seen`, { docId: profileData._id, contactId }, { headers: { dtoken } });
+      await axios.post(`${backendUrl}/api/doctor/mark-seen`, { docId: myIdStr, contactId: cIdStr }, { headers: { dtoken } });
     } catch (error) {
       console.log(error);
     }
@@ -180,8 +182,8 @@ const DoctorContextProvider = (props) => {
   }, [dtoken, profileData]);
 
   // Calculate unread count
-  const myId = profileData ? profileData._id : null;
-  const unreadCount = myId ? messages.filter(msg => msg.receiverId === myId && !msg.seen).length : 0;
+  const myId = profileData ? String(profileData._id) : null;
+  const unreadCount = myId ? messages.filter(msg => String(msg.receiverId) === myId && !msg.seen).length : 0;
 
   const value = {
     dtoken,

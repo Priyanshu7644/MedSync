@@ -126,20 +126,21 @@ const AdminContextProvider = (props) => {
   const adminMarkMessagesSeen = async (contactId) => {
     try {
       if (!aToken || !contactId) return;
+      const cIdStr = String(contactId);
       
       // Optimistically mark seen locally
       setAllMessages(prev => prev.map(msg => 
-        msg.senderId === contactId && msg.receiverId === 'admin' 
+        String(msg.senderId) === cIdStr && msg.receiverId === 'admin' 
           ? { ...msg, seen: true, seenAt: Date.now() } 
           : msg
       ));
       setMessages(prev => prev.map(msg => 
-        msg.senderId === contactId && msg.receiverId === 'admin' 
+        String(msg.senderId) === cIdStr && msg.receiverId === 'admin' 
           ? { ...msg, seen: true, seenAt: Date.now() } 
           : msg
       ));
 
-      await axios.post(`${backendUrl}/api/admin/mark-seen`, { contactId }, { headers: { aToken } });
+      await axios.post(`${backendUrl}/api/admin/mark-seen`, { contactId: cIdStr }, { headers: { aToken } });
     } catch (error) {
       console.log(error);
     }

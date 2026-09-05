@@ -222,8 +222,8 @@ const adminMarkMessagesSeen = async (req, res) => {
     try {
         const { contactId } = req.body;
         await messageModel.updateMany(
-            { senderId: contactId, receiverId: 'admin', seen: false },
-            { seen: true, seenAt: Date.now() }
+            { senderId: String(contactId), receiverId: 'admin' },
+            { $set: { seen: true, seenAt: Date.now() } }
         );
         res.json({ success: true, message: 'Messages marked as seen' });
     } catch (error) {

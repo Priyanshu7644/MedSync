@@ -39,6 +39,15 @@ const DoctorMessages = () => {
         }
     }, [selectedContact, appointments]);
 
+    useEffect(() => {
+        if (selectedContact && docId) {
+            const hasUnseen = messages.some(m => String(m.senderId) === String(selectedContact) && String(m.receiverId) === String(docId) && !m.seen);
+            if (hasUnseen) {
+                doctorMarkMessagesSeen(selectedContact);
+            }
+        }
+    }, [messages, selectedContact, docId]);
+
     // Build map of user data
     const userMap = {
         'admin': { 
