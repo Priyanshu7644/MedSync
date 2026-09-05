@@ -3,7 +3,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { DoctorContext } from '../context/DoctorContext';
 
 const DoctorSidebar = () => {
-  const { dtoken, setDtoken, profileData } = useContext(DoctorContext);
+  const { dtoken, setDtoken, profileData, unreadCount } = useContext(DoctorContext);
   const navigate = useNavigate();
 
   const logout = () => {
@@ -16,11 +16,11 @@ const DoctorSidebar = () => {
     { name: 'Dashboard', path: '/doctor/dashboard', icon: '📊' },
     { name: 'Appointments', path: '/doctor/appointments', icon: '📅' },
     { name: 'Profile & Clinic', path: '/doctor/profile', icon: '🩺' },
-    { name: 'Messages', path: '/doctor/messages', icon: '💬' },
+    { name: 'Messages', path: '/doctor/messages', icon: '💬', badge: unreadCount },
   ];
 
   return (
-    <aside className='w-64 min-w-[16rem] min-h-[calc(100vh-65px)] self-stretch bg-[#fef7e5] dark:bg-[#181E26] border-r border-[#00311e]/15 dark:border-[#EAE0C8]/20 flex flex-col justify-between p-4 z-20 shrink-0 transition-colors select-none'>
+    <aside className='w-64 min-w-[16rem] h-full overflow-y-auto shrink-0 bg-[#fef7e5] dark:bg-[#181E26] border-r border-[#00311e]/15 dark:border-[#EAE0C8]/20 flex flex-col justify-between p-4 z-20 transition-colors select-none'>
       {dtoken && (
         <>
           {/* Nav Items List */}
@@ -33,14 +33,22 @@ const DoctorSidebar = () => {
               <NavLink
                 key={item.path}
                 to={item.path}
-                className={({ isActive }) => `flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-xs transition-all duration-150 ${
+                className={({ isActive }) => `flex items-center justify-between px-3.5 py-2.5 rounded-lg text-xs transition-all duration-150 ${
                   isActive
                     ? 'bg-[#00311e] text-[#fef7e5] dark:bg-[#EAE0C8] dark:text-[#202833] font-semibold shadow-sm'
                     : 'text-[#00311e]/70 dark:text-[#EAE0C8]/70 hover:text-[#00311e] dark:hover:text-[#EAE0C8] hover:bg-[#00311e]/5 dark:hover:bg-[#EAE0C8]/5 font-medium'
                 }`}
               >
-                <span className='text-sm'>{item.icon}</span>
-                <span>{item.name}</span>
+                <div className='flex items-center gap-3'>
+                  <span className='text-sm'>{item.icon}</span>
+                  <span>{item.name}</span>
+                </div>
+
+                {item.badge > 0 && (
+                  <span className='px-2 py-0.5 rounded-full bg-emerald-600 text-white text-[10px] font-bold shadow-sm animate-pulse'>
+                    {item.badge}
+                  </span>
+                )}
               </NavLink>
             ))}
           </div>

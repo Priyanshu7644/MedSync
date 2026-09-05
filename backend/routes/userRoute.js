@@ -1,5 +1,5 @@
 import express from 'express';
-import { registerUser, loginUser, getProfile, updateProfile, bookAppointment, listAppointment, cancelAppointment, paymentStripe, verifyStripe, submitComplaint, listComplaints, userSendMessage, userGetMessages } from '../controllers/userController.js';
+import { registerUser, loginUser, getProfile, updateProfile, bookAppointment, listAppointment, cancelAppointment, paymentStripe, verifyStripe, submitComplaint, listComplaints, userSendMessage, userGetMessages, userMarkMessagesSeen } from '../controllers/userController.js';
 import authUser from '../middlewares/authUser.js';
 import upload from '../middlewares/multer.js';
 
@@ -18,5 +18,6 @@ userRouter.post('/submit-complaint', authUser, submitComplaint);
 userRouter.get('/complaints', authUser, listComplaints);
 userRouter.post('/send-message', upload.single('attachment'), authUser, userSendMessage);
 userRouter.post('/get-messages', authUser, userGetMessages);
+userRouter.post('/mark-seen', authUser, userMarkMessagesSeen);
 
 export default userRouter;

@@ -23,6 +23,7 @@ import DoctorsList from './pages/Admin/DoctorsList';
 import AllAppointments from './pages/Admin/AllAppointments';
 import Complaints from './pages/Admin/Complaints';
 import Dashboard from './pages/Admin/Dashboard';
+import AdminMessages from './pages/Admin/AdminMessages';
 import { AdminContext } from './context/AdminContext';
 
 // Doctor Imports
@@ -65,13 +66,14 @@ const App = () => {
         {/* Admin App Layout */}
         <Route path='/admin/*' element={
           aToken ? (
-            <div className='bg-[#fef7e5] dark:bg-[#202833] text-[#00311e] dark:text-[#EAE0C8] min-h-screen transition-colors'>
+            <div className='bg-[#fef7e5] dark:bg-[#202833] text-[#00311e] dark:text-[#EAE0C8] h-screen flex flex-col overflow-hidden transition-colors'>
               <DashboardNavbar role='admin' />
-              <div className='flex items-stretch min-h-[calc(100vh-65px)]'>
+              <div className='flex flex-1 items-stretch overflow-hidden'>
                 <Sidebar />
-                <div className='flex-1 p-5 sm:p-7 max-w-7xl w-full'>
+                <div className='flex-1 p-4 sm:p-6 overflow-y-auto w-full'>
                   <Routes>
                     <Route path='/' element={<Dashboard />} />
+                    <Route path='/messages' element={<AdminMessages />} />
                     <Route path='/add-doctor' element={<AddDoctor />} />
                     <Route path='/doctor-list' element={<DoctorsList />} />
                     <Route path='/all-appointments' element={<AllAppointments />} />
@@ -91,11 +93,11 @@ const App = () => {
         {/* Doctor App Layout */}
         <Route path='/doctor/*' element={
           dtoken ? (
-            <div className='bg-[#fef7e5] dark:bg-[#202833] text-[#00311e] dark:text-[#EAE0C8] min-h-screen transition-colors'>
+            <div className='bg-[#fef7e5] dark:bg-[#202833] text-[#00311e] dark:text-[#EAE0C8] h-screen flex flex-col overflow-hidden transition-colors'>
               <DashboardNavbar role='doctor' />
-              <div className='flex items-stretch min-h-[calc(100vh-65px)]'>
+              <div className='flex flex-1 items-stretch overflow-hidden'>
                 <DoctorSidebar />
-                <div className='flex-1 p-5 sm:p-7 max-w-7xl w-full'>
+                <div className='flex-1 p-4 sm:p-6 overflow-y-auto w-full'>
                   <Routes>
                     <Route path='/dashboard' element={<DoctorDashboard />} />
                     <Route path='/appointments' element={<DoctorAppointments />} />

@@ -1,4 +1,4 @@
-import { createContext, useState } from "react";
+import { createContext, useState, useEffect } from "react";
 import axios from 'axios';
 import { toast } from 'react-toastify';
 
@@ -10,6 +10,7 @@ const AdminContextProvider = (props) => {
   const [appointments, setAppointments] = useState([]);
   const [complaints, setComplaints] = useState([]);
   const [messages, setMessages] = useState([]);
+  const [allMessages, setAllMessages] = useState([]);
   
   const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:4000';
 
@@ -110,6 +111,40 @@ const AdminContextProvider = (props) => {
     }
   }
 
+  const adminGetAllMessages = async () => {
+    try {
+      if (!aToken) return;
+      const { data } = await axios.get(`${backendUrl}/api/admin/get-all-messages`, { headers: { aToken } });
+      if (data.success) {
+        setAllMessages(data.messages || []);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  const adminMarkMessagesSeen = async (contactId) => {
+    try {
+      if (!aToken || !contactId) return;
+      
+      // Optimistically mark seen locally
+      setAllMessages(prev => prev.map(msg => 
+        msg.senderId === contactId && msg.receiverId === 'admin' 
+          ? { ...msg, seen: true, seenAt: Date.now() } 
+          : msg
+      ));
+      setMessages(prev => prev.map(msg => 
+        msg.senderId === contactId && msg.receiverId === 'admin' 
+          ? { ...msg, seen: true, seenAt: Date.now() } 
+          : msg
+      ));
+
+      await axios.post(`${backendUrl}/api/admin/mark-seen`, { contactId }, { headers: { aToken } });
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
   const adminSendMessage = async (docId, text, file = null) => {
     try {
       let payload = { docId, text };
@@ -122,8 +157,22 @@ const AdminContextProvider = (props) => {
         payload.append('attachment', file);
       }
 
+      // Optimistic message creation
+      const tempMsg = {
+        _id: 'temp_' + Date.now(),
+        senderId: 'admin',
+        receiverId: docId,
+        text: text || '',
+        attachment: file ? URL.createObjectURL(file) : '',
+        date: Date.now(),
+        seen: false
+      };
+      setMessages(prev => [...prev, tempMsg]);
+      setAllMessages(prev => [...prev, tempMsg]);
+
       const { data } = await axios.post(`${backendUrl}/api/admin/send-message`, payload, { headers });
       if (data.success) {
+        adminGetAllMessages();
         adminGetMessages(docId);
         return true;
       } else {
@@ -152,6 +201,20 @@ const AdminContextProvider = (props) => {
     }
   }
 
+  // Polling for real-time messages & badges
+  useEffect(() => {
+    if (aToken) {
+      adminGetAllMessages();
+      const interval = setInterval(() => {
+        adminGetAllMessages();
+      }, 3500);
+      return () => clearInterval(interval);
+    }
+  }, [aToken]);
+
+  // Calculate unread count
+  const unreadCount = allMessages.filter(msg => msg.receiverId === 'admin' && !msg.seen).length;
+
   const value = {
     aToken,
     setAToken,
@@ -168,8 +231,13 @@ const AdminContextProvider = (props) => {
     updateDoctorProfileAdmin,
     messages,
     setMessages,
+    allMessages,
+    setAllMessages,
     adminGetMessages,
+    adminGetAllMessages,
+    adminMarkMessagesSeen,
     adminSendMessage,
+    unreadCount,
     blockPatient
   }
 

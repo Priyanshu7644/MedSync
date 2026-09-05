@@ -340,11 +340,13 @@ const userSendMessage = async (req, res) => {
             receiverId: docId,
             text: text || "",
             attachment: attachmentUrl,
-            date: Date.now()
+            date: Date.now(),
+            seen: false,
+            seenAt: 0
         });
         await newMessage.save();
 
-        res.json({ success: true, message: 'Message sent' });
+        res.json({ success: true, message: 'Message sent', messageData: newMessage });
     } catch (error) {
         console.log(error);
         res.json({ success: false, message: error.message });
@@ -370,4 +372,34 @@ const userGetMessages = async (req, res) => {
     }
 }
 
-export { registerUser, loginUser, getProfile, updateProfile, bookAppointment, listAppointment, paymentStripe, verifyStripe, cancelAppointment, submitComplaint, listComplaints, userSendMessage, userGetMessages }
+// API for user to mark messages from doctor as seen
+const userMarkMessagesSeen = async (req, res) => {
+    try {
+        const { userId, docId } = req.body;
+        await messageModel.updateMany(
+            { senderId: docId, receiverId: userId, seen: false },
+            { seen: true, seenAt: Date.now() }
+        );
+        res.json({ success: true, message: 'Messages marked as seen' });
+    } catch (error) {
+        console.log(error);
+        res.json({ success: false, message: error.message });
+    }
+}
+
+export { 
+    registerUser, 
+    loginUser, 
+    getProfile, 
+    updateProfile, 
+    bookAppointment, 
+    listAppointment, 
+    paymentStripe, 
+    verifyStripe, 
+    cancelAppointment, 
+    submitComplaint, 
+    listComplaints, 
+    userSendMessage, 
+    userGetMessages,
+    userMarkMessagesSeen
+}

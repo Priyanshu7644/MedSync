@@ -474,7 +474,7 @@ const Doctors = () => {
         </button>
 
         {/* Sidebar Discipline Filter Menu */}
-        <div className={`w-full lg:w-64 flex-col gap-2 ${showFilter ? 'flex' : 'hidden lg:flex'}`}>
+        <div className={`w-full lg:w-64 lg:sticky lg:top-24 self-start flex-col gap-2 ${showFilter ? 'flex' : 'hidden lg:flex'}`}>
           <div className='p-3 bg-white/95 dark:bg-[#181E26] border border-[#00311e]/15 dark:border-[#EAE0C8]/20 shadow-sm'>
             <p className='text-[10px] font-bold uppercase tracking-wider text-[#00311e]/60 dark:text-[#EAE0C8]/60 pb-2 border-b border-[#00311e]/10 dark:border-[#EAE0C8]/10 mb-2'>
               Speciality Discipline

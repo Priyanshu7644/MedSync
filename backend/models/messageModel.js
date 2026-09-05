@@ -5,7 +5,9 @@ const messageSchema = new mongoose.Schema({
   receiverId: { type: String, required: true },
   text: { type: String, required: false, default: "" },
   attachment: { type: String, required: false, default: "" },
-  date: { type: Number, required: true }
+  date: { type: Number, required: true },
+  seen: { type: Boolean, default: false },
+  seenAt: { type: Number, default: 0 }
 })
 
 const messageModel = mongoose.models.message || mongoose.model('message', messageSchema);

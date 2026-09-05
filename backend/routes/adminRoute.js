@@ -1,5 +1,5 @@
 import express from 'express';
-import { addDoctor, loginAdmin, allDoctors, appointmentsAdmin, appointmentCancel, allComplaintsAdmin, resolveComplaint, updateDoctorProfileAdmin, adminSendMessage, adminGetMessages, blockPatient } from '../controllers/adminController.js';
+import { addDoctor, loginAdmin, allDoctors, appointmentsAdmin, appointmentCancel, allComplaintsAdmin, resolveComplaint, updateDoctorProfileAdmin, adminSendMessage, adminGetMessages, adminGetAllMessages, adminMarkMessagesSeen, blockPatient } from '../controllers/adminController.js';
 import upload from '../middlewares/multer.js';
 import adminAuth from '../middlewares/adminAuth.js';
 
@@ -15,6 +15,8 @@ adminRouter.post('/resolve-complaint', adminAuth, resolveComplaint);
 adminRouter.post('/update-doctor', adminAuth, updateDoctorProfileAdmin);
 adminRouter.post('/send-message', upload.single('attachment'), adminAuth, adminSendMessage);
 adminRouter.post('/get-messages', adminAuth, adminGetMessages);
+adminRouter.get('/get-all-messages', adminAuth, adminGetAllMessages);
+adminRouter.post('/mark-seen', adminAuth, adminMarkMessagesSeen);
 adminRouter.post('/block-patient', adminAuth, blockPatient);
 
 export default adminRouter;

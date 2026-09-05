@@ -1,8 +1,10 @@
 import React, { useContext, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AdminContext } from '../../context/AdminContext';
 
 const Dashboard = () => {
-    const { aToken, doctors, getAllDoctors, updateDoctorProfileAdmin, messages, adminGetMessages, adminSendMessage, blockPatient } = useContext(AdminContext);
+    const navigate = useNavigate();
+    const { aToken, doctors, getAllDoctors, updateDoctorProfileAdmin, messages, allMessages, unreadCount, adminGetMessages, adminSendMessage, blockPatient } = useContext(AdminContext);
     
     const [selectedDoctor, setSelectedDoctor] = useState(null);
     const [docData, setDocData] = useState({});
@@ -337,6 +339,45 @@ const Dashboard = () => {
                     {searchQuery && (
                         <button onClick={() => setSearchQuery('')} className='absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-[#00311e]/50 hover:text-[#00311e] dark:text-[#EAE0C8]/50 dark:hover:text-[#EAE0C8]'>✕</button>
                     )}
+                </div>
+            </div>
+
+            {/* Quick Message Bar / Unread Alert */}
+            <div 
+                onClick={() => navigate('/admin/messages')}
+                className={`p-4 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 cursor-pointer transition-all ${
+                    unreadCount > 0 
+                        ? 'bg-emerald-500/10 dark:bg-emerald-500/15 border-emerald-500/30 hover:border-emerald-500/60 shadow-sm' 
+                        : 'bg-white dark:bg-[#181E26] border-[#00311e]/15 dark:border-[#EAE0C8]/20 hover:border-[#00311e]/40 dark:hover:border-[#EAE0C8]/40'
+                }`}
+            >
+                <div className='flex items-center gap-3'>
+                    <div className='w-10 h-10 rounded-full bg-[#00311e]/10 dark:bg-[#EAE0C8]/10 text-lg flex items-center justify-center text-[#00311e] dark:text-[#EAE0C8] shrink-0'>
+                        💬
+                    </div>
+                    <div>
+                        <div className='flex items-center gap-2'>
+                            <h4 className='font-bold text-xs text-[#00311e] dark:text-[#EAE0C8]'>
+                                Consultation & Staff Messaging Bar
+                            </h4>
+                            {unreadCount > 0 && (
+                                <span className='px-2 py-0.5 rounded-full bg-emerald-600 text-white text-[10px] font-bold animate-pulse'>
+                                    {unreadCount} Unread
+                                </span>
+                            )}
+                        </div>
+                        <p className='text-[11px] text-[#00311e]/70 dark:text-[#EAE0C8]/70 mt-0.5'>
+                            {unreadCount > 0 
+                                ? `You have ${unreadCount} new unseen message${unreadCount > 1 ? 's' : ''} from licensed physicians waiting for your review.` 
+                                : 'Direct end-to-end communication with doctors. Click to launch full-screen WhatsApp chat suite.'}
+                        </p>
+                    </div>
+                </div>
+
+                <div className='flex items-center gap-2 self-end sm:self-auto'>
+                    <span className='px-3 py-1.5 rounded-lg bg-[#00311e] text-[#fef7e5] dark:bg-[#EAE0C8] dark:text-[#202833] text-xs font-bold shadow-sm whitespace-nowrap'>
+                        Open Messages ➔
+                    </span>
                 </div>
             </div>
 

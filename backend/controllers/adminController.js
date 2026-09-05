@@ -172,10 +172,12 @@ const adminSendMessage = async (req, res) => {
             receiverId: docId,
             text: text || "",
             attachment: attachmentUrl,
-            date: Date.now()
+            date: Date.now(),
+            seen: false,
+            seenAt: 0
         });
         await newMessage.save();
-        res.json({ success: true, message: 'Message sent' });
+        res.json({ success: true, message: 'Message sent', messageData: newMessage });
     } catch (error) {
         console.log(error);
         res.json({ success: false, message: error.message });
@@ -199,6 +201,37 @@ const adminGetMessages = async (req, res) => {
     }
 }
 
+// API for admin to get ALL messages
+const adminGetAllMessages = async (req, res) => {
+    try {
+        const messages = await messageModel.find({
+            $or: [
+                { senderId: 'admin' },
+                { receiverId: 'admin' }
+            ]
+        }).sort({ date: 1 });
+        res.json({ success: true, messages });
+    } catch (error) {
+        console.log(error);
+        res.json({ success: false, message: error.message });
+    }
+}
+
+// API for admin to mark messages from a contact as seen
+const adminMarkMessagesSeen = async (req, res) => {
+    try {
+        const { contactId } = req.body;
+        await messageModel.updateMany(
+            { senderId: contactId, receiverId: 'admin', seen: false },
+            { seen: true, seenAt: Date.now() }
+        );
+        res.json({ success: true, message: 'Messages marked as seen' });
+    } catch (error) {
+        console.log(error);
+        res.json({ success: false, message: error.message });
+    }
+}
+
 // API to block/unblock patient
 const blockPatient = async (req, res) => {
     try {
@@ -211,4 +244,18 @@ const blockPatient = async (req, res) => {
     }
 }
 
-export { addDoctor, loginAdmin, allDoctors, appointmentsAdmin, appointmentCancel, allComplaintsAdmin, resolveComplaint, updateDoctorProfileAdmin, adminSendMessage, adminGetMessages, blockPatient }
+export { 
+    addDoctor, 
+    loginAdmin, 
+    allDoctors, 
+    appointmentsAdmin, 
+    appointmentCancel, 
+    allComplaintsAdmin, 
+    resolveComplaint, 
+    updateDoctorProfileAdmin, 
+    adminSendMessage, 
+    adminGetMessages, 
+    adminGetAllMessages,
+    adminMarkMessagesSeen,
+    blockPatient 
+}

@@ -160,10 +160,12 @@ const doctorSendMessage = async (req, res) => {
             receiverId,
             text: text || "",
             attachment: attachmentUrl,
-            date: Date.now()
+            date: Date.now(),
+            seen: false,
+            seenAt: 0
         });
         await newMessage.save();
-        res.json({ success: true, message: 'Message sent' });
+        res.json({ success: true, message: 'Message sent', messageData: newMessage });
     } catch (error) {
         console.log(error);
         res.json({ success: false, message: error.message });
@@ -181,6 +183,21 @@ const doctorGetMessages = async (req, res) => {
             ]
         }).sort({ date: 1 });
         res.json({ success: true, messages });
+    } catch (error) {
+        console.log(error);
+        res.json({ success: false, message: error.message });
+    }
+}
+
+// API for doctor to mark messages from a contact as seen
+const doctorMarkMessagesSeen = async (req, res) => {
+    try {
+        const { docId, contactId } = req.body;
+        await messageModel.updateMany(
+            { senderId: contactId, receiverId: docId, seen: false },
+            { seen: true, seenAt: Date.now() }
+        );
+        res.json({ success: true, message: 'Messages marked as seen' });
     } catch (error) {
         console.log(error);
         res.json({ success: false, message: error.message });
@@ -205,4 +222,17 @@ const blockPatient = async (req, res) => {
     }
 }
 
-export { doctorList, loginDoctor, doctorAppointments, appointmentComplete, appointmentCancel, doctorDashboard, doctorProfile, updateDoctorProfile, doctorSendMessage, doctorGetMessages, blockPatient }
+export { 
+    doctorList, 
+    loginDoctor, 
+    doctorAppointments, 
+    appointmentComplete, 
+    appointmentCancel, 
+    doctorDashboard, 
+    doctorProfile, 
+    updateDoctorProfile, 
+    doctorSendMessage, 
+    doctorGetMessages, 
+    doctorMarkMessagesSeen,
+    blockPatient 
+}

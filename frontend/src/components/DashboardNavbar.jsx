@@ -7,9 +7,13 @@ import ThemeToggle from './ThemeToggle';
 
 const DashboardNavbar = ({ role }) => {
   const navigate = useNavigate();
-  const { setAToken } = useContext(AdminContext);
-  const { setDtoken, profileData } = useContext(DoctorContext);
+  const { setAToken, unreadCount: adminUnread } = useContext(AdminContext);
+  const { setDtoken, profileData, unreadCount: doctorUnread } = useContext(DoctorContext);
   const { theme } = useContext(ThemeContext);
+
+  const isDoctor = role === 'doctor';
+  const unreadCount = isDoctor ? doctorUnread : adminUnread;
+  const messagesLink = isDoctor ? '/doctor/messages' : '/admin/messages';
 
   const logout = () => {
     if (role === 'admin') {
@@ -29,7 +33,6 @@ const DashboardNavbar = ({ role }) => {
     year: 'numeric'
   }).format(new Date());
 
-  const isDoctor = role === 'doctor';
   const homeLink = isDoctor ? '/doctor/dashboard' : '/admin';
   const roleLabel = isDoctor ? 'Provider Console' : 'Admin Console';
   const logoText = isDoctor ? 'DR' : 'MS';
@@ -53,9 +56,24 @@ const DashboardNavbar = ({ role }) => {
         </div>
       </div>
       
-      <div className='flex items-center gap-3 sm:gap-4'>
+      <div className='flex items-center gap-2.5 sm:gap-4'>
+        {/* Quick Messages Bar Button */}
+        <button
+          onClick={() => navigate(messagesLink)}
+          className='relative flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#00311e]/5 dark:bg-[#202833] hover:bg-[#00311e]/10 dark:hover:bg-[#EAE0C8]/10 border border-[#00311e]/15 dark:border-[#EAE0C8]/20 text-xs font-semibold transition-all'
+          title="Open Messages"
+        >
+          <span className='text-sm'>💬</span>
+          <span className='hidden sm:inline text-xs'>Messages</span>
+          {unreadCount > 0 && (
+            <span className='px-1.5 py-0.2 rounded-full bg-emerald-600 text-white text-[10px] font-bold shadow-sm animate-pulse'>
+              {unreadCount}
+            </span>
+          )}
+        </button>
+
         {/* Date */}
-        <div className='hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#00311e]/5 dark:bg-[#202833] border border-[#00311e]/15 dark:border-[#EAE0C8]/20 text-xs text-[#00311e]/80 dark:text-[#EAE0C8]/80 font-medium'>
+        <div className='hidden md:flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#00311e]/5 dark:bg-[#202833] border border-[#00311e]/15 dark:border-[#EAE0C8]/20 text-xs text-[#00311e]/80 dark:text-[#EAE0C8]/80 font-medium'>
           <span>📅</span>
           <span>{currentDate}</span>
         </div>
