@@ -377,8 +377,8 @@ const userMarkMessagesSeen = async (req, res) => {
     try {
         const { userId, docId } = req.body;
         await messageModel.updateMany(
-            { senderId: docId, receiverId: userId, seen: false },
-            { seen: true, seenAt: Date.now() }
+            { senderId: String(docId), receiverId: String(userId) },
+            { $set: { seen: true, seenAt: Date.now() } }
         );
         res.json({ success: true, message: 'Messages marked as seen' });
     } catch (error) {

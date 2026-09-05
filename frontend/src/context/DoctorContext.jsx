@@ -99,18 +99,17 @@ const DoctorContextProvider = (props) => {
 
   const doctorMarkMessagesSeen = async (contactId) => {
     try {
-      if (!dtoken || !profileData || !contactId) return;
+      if (!dtoken || !contactId) return;
       const cIdStr = String(contactId);
-      const myIdStr = String(profileData._id);
 
       // Optimistically mark seen in local state
       setMessages(prev => prev.map(msg => 
-        String(msg.senderId) === cIdStr && String(msg.receiverId) === myIdStr 
+        String(msg.senderId) === cIdStr 
           ? { ...msg, seen: true, seenAt: Date.now() } 
           : msg
       ));
 
-      await axios.post(`${backendUrl}/api/doctor/mark-seen`, { docId: myIdStr, contactId: cIdStr }, { headers: { dtoken } });
+      await axios.post(`${backendUrl}/api/doctor/mark-seen`, { contactId: cIdStr }, { headers: { dtoken } });
     } catch (error) {
       console.log(error);
     }
@@ -170,20 +169,24 @@ const DoctorContextProvider = (props) => {
     }
   }
 
-  // Polling for real-time messages
+  // Polling for real-time messages and automatic profile load
   useEffect(() => {
     if (dtoken) {
+      getProfileData();
+      getAppointments();
       doctorGetMessages();
       const interval = setInterval(() => {
         doctorGetMessages();
-      }, 3500);
+      }, 3000);
       return () => clearInterval(interval);
     }
-  }, [dtoken, profileData]);
+  }, [dtoken]);
 
-  // Calculate unread count
-  const myId = profileData ? String(profileData._id) : null;
-  const unreadCount = myId ? messages.filter(msg => String(msg.receiverId) === myId && !msg.seen).length : 0;
+  // Calculate unread count for provider topbar and sidebar badge
+  const unreadCount = messages.filter(msg => {
+    const isSentByMe = profileData ? String(msg.senderId) === String(profileData._id) : msg.senderId === 'doctor';
+    return !isSentByMe && !msg.seen;
+  }).length;
 
   const value = {
     dtoken,

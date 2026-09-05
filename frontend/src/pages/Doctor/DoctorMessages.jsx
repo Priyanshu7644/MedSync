@@ -34,20 +34,20 @@ const DoctorMessages = () => {
 
     useEffect(() => {
         if (selectedContact) {
-            const app = appointments.find(a => a.userData?._id === selectedContact);
+            const app = appointments.find(a => String(a.userData?._id) === String(selectedContact));
             setIsBlocked(app?.userData?.isBlocked || false);
             doctorMarkMessagesSeen(selectedContact);
         }
     }, [selectedContact, appointments]);
 
     useEffect(() => {
-        if (selectedContact && docId) {
-            const hasUnseen = messages.some(m => String(m.senderId) === String(selectedContact) && String(m.receiverId) === String(docId) && !m.seen);
+        if (selectedContact) {
+            const hasUnseen = messages.some(m => String(m.senderId) === String(selectedContact) && !m.seen);
             if (hasUnseen) {
                 doctorMarkMessagesSeen(selectedContact);
             }
         }
-    }, [messages, selectedContact, docId]);
+    }, [messages, selectedContact]);
 
     // Build map of user data
     const userMap = {
@@ -74,6 +74,9 @@ const DoctorMessages = () => {
     // Ensure admin is always in conversation list
     conversations['admin'] = {
         id: 'admin',
+        name: 'Clinic Administration',
+        image: 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png',
+        speciality: 'Platform HQ',
         messages: [],
         unreadCount: 0,
         lastDate: 0
@@ -84,6 +87,9 @@ const DoctorMessages = () => {
         if (app.userData?._id && !conversations[app.userData._id]) {
             conversations[app.userData._id] = {
                 id: app.userData._id,
+                name: app.userData.name,
+                image: app.userData.image || 'https://cdn-icons-png.flaticon.com/512/149/149071.png',
+                speciality: 'Patient',
                 messages: [],
                 unreadCount: 0,
                 lastDate: 0
@@ -93,17 +99,20 @@ const DoctorMessages = () => {
 
     // Populate messages and calculate unread counts
     messages.forEach(msg => {
-        let contactId = msg.senderId === docId ? msg.receiverId : msg.senderId;
-        
-        if (!docId) {
-            contactId = msg.senderId === 'admin' ? msg.senderId : 
-                       (msg.receiverId === 'admin' ? msg.receiverId : 
-                       (userMap[msg.senderId] ? msg.senderId : msg.receiverId));
+        const isSentByDoctor = docId ? String(msg.senderId) === String(docId) : msg.senderId === 'doctor';
+        let contactId = isSentByDoctor ? msg.receiverId : msg.senderId;
+
+        if (!contactId || contactId === 'undefined') {
+            contactId = 'admin';
         }
 
         if (!conversations[contactId]) {
+            const u = userMap[contactId] || { name: (contactId === 'admin' ? 'Clinic Administration' : 'Patient ' + String(contactId).slice(-4)) };
             conversations[contactId] = {
                 id: contactId,
+                name: u.name,
+                image: u.image || 'https://cdn-icons-png.flaticon.com/512/149/149071.png',
+                speciality: u.speciality || (contactId === 'admin' ? 'Platform HQ' : 'Patient'),
                 messages: [],
                 unreadCount: 0,
                 lastDate: 0
@@ -113,7 +122,8 @@ const DoctorMessages = () => {
         if (msg.date > conversations[contactId].lastDate) {
             conversations[contactId].lastDate = msg.date;
         }
-        if (msg.receiverId === docId && !msg.seen) {
+        // If msg was sent by this contact to the doctor and is unseen, increment unread count:
+        if (String(msg.senderId) === String(contactId) && !msg.seen) {
             conversations[contactId].unreadCount += 1;
         }
     });
@@ -124,18 +134,23 @@ const DoctorMessages = () => {
     });
 
     const filteredContacts = contactList.filter(c => {
-        const u = userMap[c.id] || { name: 'Patient ' + c.id.slice(-4) };
+        const u = userMap[c.id] || { name: (c.id === 'admin' ? 'Clinic Administration' : 'Patient ' + String(c.id).slice(-4)) };
         return u.name.toLowerCase().includes(searchTerm.toLowerCase());
     });
 
     // Deduplicate and pull all messages for selectedContact
     const currentMessages = useMemo(() => {
         if (!selectedContact) return [];
-        const filtered = messages.filter(msg => 
-            (msg.senderId === docId && msg.receiverId === selectedContact) ||
-            (msg.senderId === selectedContact && msg.receiverId === docId) ||
-            (selectedContact === 'admin' && (msg.senderId === 'admin' || msg.receiverId === 'admin'))
-        );
+        const cIdStr = String(selectedContact);
+        const filtered = messages.filter(msg => {
+            const isSentByMe = docId ? String(msg.senderId) === String(docId) : msg.senderId === 'doctor';
+            const isReceivedByMe = docId ? String(msg.receiverId) === String(docId) : msg.receiverId !== 'admin';
+            
+            if (cIdStr === 'admin') {
+                return (msg.senderId === 'admin' && (isReceivedByMe || !docId)) || (isSentByMe && msg.receiverId === 'admin');
+            }
+            return (isSentByMe && String(msg.receiverId) === cIdStr) || (String(msg.senderId) === cIdStr && (isReceivedByMe || !docId));
+        });
         const map = new Map();
         filtered.forEach(m => {
             if (m && (m._id || m.date)) {
