@@ -226,9 +226,9 @@ const DoctorMessages = () => {
     const activeUser = selectedContact ? (userMap[selectedContact] || { name: 'Patient ' + selectedContact.slice(-4), image: 'https://cdn-icons-png.flaticon.com/512/149/149071.png' }) : null;
 
     return (
-        <div className='h-[calc(100vh-95px)] max-h-[calc(100vh-95px)] flex flex-col text-[#00311e] dark:text-[#EAE0C8] overflow-hidden select-none'>
+        <div className='h-full max-h-full flex-1 flex flex-col text-[#00311e] dark:text-[#EAE0C8] overflow-hidden select-none min-h-0'>
             {/* WhatsApp-Style Container: Fixed Outer Frame */}
-            <div className='flex-1 flex flex-col lg:flex-row border border-[#00311e]/15 dark:border-[#EAE0C8]/20 rounded-2xl bg-white dark:bg-[#181E26] overflow-hidden shadow-lg min-h-0'>
+            <div className='flex-1 h-full flex flex-col lg:flex-row border border-[#00311e]/15 dark:border-[#EAE0C8]/20 rounded-2xl bg-white dark:bg-[#181E26] overflow-hidden shadow-lg min-h-0'>
                 
                 {/* Contacts Sidebar (Fixed Left Box) */}
                 <div className='w-full lg:w-[320px] xl:w-[350px] border-b lg:border-b-0 lg:border-r border-[#00311e]/15 dark:border-[#EAE0C8]/20 flex flex-col bg-[#00311e]/5 dark:bg-[#141820] shrink-0 h-full min-h-0 overflow-hidden'>

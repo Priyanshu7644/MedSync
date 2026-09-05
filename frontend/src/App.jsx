@@ -66,18 +66,18 @@ const App = () => {
         {/* Admin App Layout */}
         <Route path='/admin/*' element={
           aToken ? (
-            <div className='bg-[#fef7e5] dark:bg-[#202833] text-[#00311e] dark:text-[#EAE0C8] h-screen flex flex-col overflow-hidden transition-colors'>
+            <div className='bg-[#fef7e5] dark:bg-[#202833] text-[#00311e] dark:text-[#EAE0C8] h-screen max-h-screen w-full flex flex-col overflow-hidden transition-colors select-none'>
               <DashboardNavbar role='admin' />
-              <div className='flex flex-1 items-stretch overflow-hidden'>
+              <div className='flex flex-1 items-stretch overflow-hidden min-h-0 w-full'>
                 <Sidebar />
-                <div className='flex-1 p-4 sm:p-6 overflow-y-auto w-full'>
+                <div className='flex-1 flex flex-col overflow-hidden min-h-0 w-full'>
                   <Routes>
-                    <Route path='/' element={<Dashboard />} />
-                    <Route path='/messages' element={<AdminMessages />} />
-                    <Route path='/add-doctor' element={<AddDoctor />} />
-                    <Route path='/doctor-list' element={<DoctorsList />} />
-                    <Route path='/all-appointments' element={<AllAppointments />} />
-                    <Route path='/complaints' element={<Complaints />} />
+                    <Route path='/' element={<div className='flex-1 p-4 sm:p-6 overflow-y-auto w-full min-h-0'><Dashboard /></div>} />
+                    <Route path='/messages' element={<div className='flex-1 p-2 sm:p-3 h-full w-full overflow-hidden min-h-0 flex flex-col'><AdminMessages /></div>} />
+                    <Route path='/add-doctor' element={<div className='flex-1 p-4 sm:p-6 overflow-y-auto w-full min-h-0'><AddDoctor /></div>} />
+                    <Route path='/doctor-list' element={<div className='flex-1 p-4 sm:p-6 overflow-y-auto w-full min-h-0'><DoctorsList /></div>} />
+                    <Route path='/all-appointments' element={<div className='flex-1 p-4 sm:p-6 overflow-y-auto w-full min-h-0'><AllAppointments /></div>} />
+                    <Route path='/complaints' element={<div className='flex-1 p-4 sm:p-6 overflow-y-auto w-full min-h-0'><Complaints /></div>} />
                   </Routes>
                 </div>
               </div>
@@ -93,16 +93,16 @@ const App = () => {
         {/* Doctor App Layout */}
         <Route path='/doctor/*' element={
           dtoken ? (
-            <div className='bg-[#fef7e5] dark:bg-[#202833] text-[#00311e] dark:text-[#EAE0C8] h-screen flex flex-col overflow-hidden transition-colors'>
+            <div className='bg-[#fef7e5] dark:bg-[#202833] text-[#00311e] dark:text-[#EAE0C8] h-screen max-h-screen w-full flex flex-col overflow-hidden transition-colors select-none'>
               <DashboardNavbar role='doctor' />
-              <div className='flex flex-1 items-stretch overflow-hidden'>
+              <div className='flex flex-1 items-stretch overflow-hidden min-h-0 w-full'>
                 <DoctorSidebar />
-                <div className='flex-1 p-4 sm:p-6 overflow-y-auto w-full'>
+                <div className='flex-1 flex flex-col overflow-hidden min-h-0 w-full'>
                   <Routes>
-                    <Route path='/dashboard' element={<DoctorDashboard />} />
-                    <Route path='/appointments' element={<DoctorAppointments />} />
-                    <Route path='/profile' element={<DoctorProfile />} />
-                    <Route path='/messages' element={<DoctorMessages />} />
+                    <Route path='/dashboard' element={<div className='flex-1 p-4 sm:p-6 overflow-y-auto w-full min-h-0'><DoctorDashboard /></div>} />
+                    <Route path='/appointments' element={<div className='flex-1 p-4 sm:p-6 overflow-y-auto w-full min-h-0'><DoctorAppointments /></div>} />
+                    <Route path='/profile' element={<div className='flex-1 p-4 sm:p-6 overflow-y-auto w-full min-h-0'><DoctorProfile /></div>} />
+                    <Route path='/messages' element={<div className='flex-1 p-2 sm:p-3 h-full w-full overflow-hidden min-h-0 flex flex-col'><DoctorMessages /></div>} />
                   </Routes>
                 </div>
               </div>
