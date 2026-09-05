@@ -518,8 +518,8 @@ const Doctors = () => {
           </div>
         </div>
 
-        {/* Doctor Profiles Grid */}
-        <div className='flex-1 w-full'>
+        {/* Doctor Profiles Grid (Scrolls independently while sidebar stays static) */}
+        <div className='flex-1 w-full lg:max-h-[calc(100vh-130px)] lg:overflow-y-auto pr-1 lg:pr-3'>
           {filterDoc.length === 0 ? (
             <div className='p-12 text-center bg-white/95 dark:bg-[#181E26] border border-[#00311e]/15 dark:border-[#EAE0C8]/20 shadow-sm space-y-4'>
               <span className='text-4xl block'>🩺</span>
