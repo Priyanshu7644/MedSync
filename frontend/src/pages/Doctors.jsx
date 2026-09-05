@@ -473,8 +473,8 @@ const Doctors = () => {
           <span>{showFilter ? '▲ Hide' : '▼ Filter'}</span>
         </button>
 
-        {/* Sidebar Discipline Filter Menu */}
-        <div className={`w-full lg:w-64 lg:sticky lg:top-24 self-start flex-col gap-2 ${showFilter ? 'flex' : 'hidden lg:flex'}`}>
+        {/* Sidebar Discipline Filter Menu (Sticky & Pinned) */}
+        <div className={`w-full lg:w-64 lg:sticky lg:top-6 lg:self-start lg:shrink-0 flex-col gap-3 z-20 ${showFilter ? 'flex' : 'hidden lg:flex'}`}>
           <div className='p-3 bg-white/95 dark:bg-[#181E26] border border-[#00311e]/15 dark:border-[#EAE0C8]/20 shadow-sm'>
             <p className='text-[10px] font-bold uppercase tracking-wider text-[#00311e]/60 dark:text-[#EAE0C8]/60 pb-2 border-b border-[#00311e]/10 dark:border-[#EAE0C8]/10 mb-2'>
               Speciality Discipline
@@ -486,8 +486,8 @@ const Doctors = () => {
                   <button
                     key={item.name}
                     onClick={() => {
-                      if (item.name === 'All Doctors') navigate('/doctors');
-                      else navigate(`/doctors/${item.name}`);
+                      if (item.name === 'All Doctors') navigate('/doctors', { replace: true, preventScrollReset: true });
+                      else navigate(`/doctors/${item.name}`, { replace: true, preventScrollReset: true });
                       setShowFilter(false);
                     }}
                     className={`w-full px-3.5 py-2.5 text-left text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-between border ${isSelected ? 'bg-[#00311e] text-[#fef7e5] dark:bg-[#EAE0C8] dark:text-[#202833] border-[#00311e] dark:border-[#EAE0C8] shadow-sm' : 'bg-[#fef7e5]/40 dark:bg-[#202833]/50 text-[#00311e] dark:text-[#EAE0C8] border-transparent hover:border-[#00311e]/30 dark:hover:border-[#EAE0C8]/30'}`}
