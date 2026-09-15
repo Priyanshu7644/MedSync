@@ -49,5 +49,39 @@ This project was built to demonstrate proficiency in creating complex, real-worl
 - **Stateless Authentication**: Utilizes encrypted JWTs stored securely in the browser's `localStorage` to maintain sessions without server-side overhead.
 - **Protected Routing**: Robust Express middleware architecture validating JWTs before granting access to sensitive API endpoints.
 - **Environment Protection**: Strict environment variable management for all API keys, database URIs, and JWT secrets.
-- **Data Validation**: Custom logic to prevent unauthorized actions (e.g., verifying Stripe payment status before opening direct messaging channels).
+- **Data Validation & Concurrency**: Multi-layered defense strategy with atomic check-and-set and database constraints preventing double bookings.
 - **Architecture**: Adherence to REST principles and scalable folder structure (Controllers, Models, Routes, Middlewares).
+
+---
+
+## 🚀 Deployment & Hosting Guide
+
+### 1. Backend Deployment (Render / Railway)
+1. **Create Web Service**: Connect your GitHub repository to [Render](https://render.com).
+2. **Root Directory**: `backend`
+3. **Build Command**: `npm install`
+4. **Start Command**: `node server.js`
+5. **Environment Variables**:
+   - `MONGODB_URI`: Your MongoDB Atlas connection string
+   - `JWT_SECRET`: Random 32+ character string
+   - `ADMIN_EMAIL`: `admin@medsync.com`
+   - `ADMIN_PASSWORD`: Your admin password
+   - `CLOUDINARY_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_SECRET_KEY`: Cloudinary credentials
+   - `STRIPE_SECRET_KEY`: Stripe API key
+   - `CURRENCY`: `usd`
+   - `SERVER_URL`: (Optional) Your backend URL (e.g. `https://medsync-api.onrender.com`). Render provides `RENDER_EXTERNAL_URL` automatically.
+
+> ⚡ **Anti-Sleep / Keep-Alive Feature**: Render free tier instances spin down after 15 minutes of inactivity. MedSync backend includes an automated self-pinging heartbeat at `/api/health` every 10 minutes to keep the server warm and response times sub-second!
+
+---
+
+### 2. Frontend Deployment (Vercel / Render Static / Netlify)
+1. **Create Project**: Connect repository to [Vercel](https://vercel.com).
+2. **Root Directory**: `frontend`
+3. **Framework Preset**: `Vite`
+4. **Build Command**: `npm run build`
+5. **Output Directory**: `dist`
+6. **Environment Variable**:
+   - `VITE_BACKEND_URL`: Your deployed backend URL (e.g. `https://medsync-api.onrender.com`)
+
+SPA rewrites are pre-configured in `frontend/vercel.json` and `frontend/public/_redirects` to ensure deep routes (`/admin/messages`, `/doctors/:speciality`, `/appointment/:docId`) never 404 on page refresh.
