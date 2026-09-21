@@ -2,7 +2,7 @@ services:
   # Backend API Web Service
   - type: web
     name: medsync-backend
-    env: node
+    runtime: node
     plan: free
     rootDir: backend
     buildCommand: npm install
@@ -32,11 +32,12 @@ services:
         value: usd
 
   # Frontend Static Site
-  - type: static
+  - type: web
     name: medsync-frontend
+    runtime: static
     rootDir: frontend
     buildCommand: npm install && npm run build
-    staticPublishPath: dist
+    staticPublishPath: ./dist
     routes:
       - type: rewrite
         source: /*
