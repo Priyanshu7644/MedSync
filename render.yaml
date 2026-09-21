@@ -32,10 +32,8 @@ services:
         value: usd
 
   # Frontend Static Site
-  - type: web
+  - type: static
     name: medsync-frontend
-    env: static
-    plan: free
     rootDir: frontend
     buildCommand: npm install && npm run build
     staticPublishPath: dist
