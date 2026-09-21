@@ -16,8 +16,8 @@ const authDoctor = async (req, res, next) => {
         req.body.docId = token_decode.id;
         next();
     } catch (error) {
-        console.log(error);
-        res.json({ success: false, message: error.message });
+        console.log("AuthDoctor error:", error.message);
+        res.json({ success: false, isAuthError: true, message: 'Invalid or expired session. Please login again.' });
     }
 }
 

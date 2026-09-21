@@ -14,16 +14,29 @@ const AdminContextProvider = (props) => {
   
   const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:4000';
 
+  const handleAuthError = (msg) => {
+    if (msg && (msg.toLowerCase().includes('session') || msg.toLowerCase().includes('signature') || msg.toLowerCase().includes('authorized') || msg.toLowerCase().includes('token') || msg.toLowerCase().includes('invalid'))) {
+      localStorage.removeItem('aToken');
+      setAToken('');
+      return true;
+    }
+    return false;
+  }
+
   const getAllDoctors = async () => {
     try {
       const { data } = await axios.get(`${backendUrl}/api/admin/all-doctors`, { headers: { aToken } });
       if (data.success) {
         setDoctors(data.doctors);
       } else {
-        toast.error(data.message);
+        if (!handleAuthError(data.message)) {
+          toast.error(data.message);
+        }
       }
     } catch (error) {
-      toast.error(error.message);
+      if (!handleAuthError(error.response?.data?.message || error.message)) {
+        toast.error(error.message);
+      }
     }
   }
 

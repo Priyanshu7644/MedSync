@@ -28,16 +28,30 @@ const AppContextProvider = (props) => {
     }
   }
 
+  const handleAuthError = (msg) => {
+    if (msg && (msg.toLowerCase().includes('session') || msg.toLowerCase().includes('signature') || msg.toLowerCase().includes('authorized') || msg.toLowerCase().includes('token') || msg.toLowerCase().includes('invalid'))) {
+      localStorage.removeItem('token');
+      setToken(false);
+      setUserData(false);
+      return true;
+    }
+    return false;
+  }
+
   const loadUserProfileData = async () => {
     try {
       const { data } = await axios.get(`${backendUrl}/api/user/get-profile`, { headers: { token } });
       if (data.success) {
         setUserData(data.userData);
       } else {
-        toast.error(data.message);
+        if (!handleAuthError(data.message)) {
+          toast.error(data.message);
+        }
       }
     } catch (error) {
-      toast.error(error.message);
+      if (!handleAuthError(error.response?.data?.message || error.message)) {
+        toast.error(error.message);
+      }
     }
   }
 
@@ -47,10 +61,14 @@ const AppContextProvider = (props) => {
       if (data.success) {
         setComplaints(data.complaints);
       } else {
-        toast.error(data.message);
+        if (!handleAuthError(data.message)) {
+          toast.error(data.message);
+        }
       }
     } catch (error) {
-      toast.error(error.message);
+      if (!handleAuthError(error.response?.data?.message || error.message)) {
+        toast.error(error.message);
+      }
     }
   }
 

@@ -13,17 +13,32 @@ const DoctorContextProvider = (props) => {
   const [messages, setMessages] = useState([]);
   const currencySymbol = '$';
 
+  const handleAuthError = (msg) => {
+    if (msg && (msg.toLowerCase().includes('session') || msg.toLowerCase().includes('signature') || msg.toLowerCase().includes('authorized') || msg.toLowerCase().includes('token') || msg.toLowerCase().includes('invalid'))) {
+      localStorage.removeItem('dtoken');
+      setDtoken('');
+      setProfileData(false);
+      setDashData(false);
+      return true;
+    }
+    return false;
+  }
+
   const getAppointments = async () => {
     try {
       const { data } = await axios.get(`${backendUrl}/api/doctor/appointments`, { headers: { dtoken } });
       if (data.success) {
         setAppointments(data.appointments.reverse());
       } else {
-        toast.error(data.message);
+        if (!handleAuthError(data.message)) {
+          toast.error(data.message);
+        }
       }
     } catch (error) {
       console.log(error);
-      toast.error(error.message);
+      if (!handleAuthError(error.response?.data?.message || error.message)) {
+        toast.error(error.message);
+      }
     }
   }
 

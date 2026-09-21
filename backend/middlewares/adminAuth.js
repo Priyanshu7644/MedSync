@@ -14,8 +14,8 @@ const adminAuth = async (req, res, next) => {
         }
         next();
     } catch (error) {
-        console.log(error);
-        res.json({ success: false, message: error.message });
+        console.log("AdminAuth error:", error.message);
+        res.json({ success: false, isAuthError: true, message: 'Invalid or expired session. Please login again.' });
     }
 }
 

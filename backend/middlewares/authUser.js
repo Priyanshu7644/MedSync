@@ -17,8 +17,8 @@ const authUser = async (req, res, next) => {
         req.body.userId = token_decode.id;
         next();
     } catch (error) {
-        console.log(error);
-        res.json({ success: false, message: error.message });
+        console.log("AuthUser error:", error.message);
+        res.json({ success: false, isAuthError: true, message: 'Invalid or expired session. Please login again.' });
     }
 }
 
