@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { AppContext } from '../context/AppContext';
+import LazyImage from '../components/LazyImage';
 
 function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
   const R = 6371; // Radius of the earth in km
@@ -545,12 +546,13 @@ const Doctors = () => {
                   <div>
                     {/* Doctor Photo Holder */}
                     <div className='relative h-56 bg-[#fef7e5]/50 dark:bg-[#202833] overflow-hidden border-b border-[#00311e]/10 dark:border-[#EAE0C8]/15'>
-                      <img
+                      <LazyImage
+                        containerClassName='w-full h-full'
                         className='w-full h-full object-cover object-top filter brightness-[0.98] group-hover:scale-105 transition-transform duration-500'
                         src={item.image}
                         alt={item.name}
                       />
-                      <div className='absolute inset-0 bg-gradient-to-t from-[#202833]/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300'></div>
+                      <div className='absolute inset-0 bg-gradient-to-t from-[#202833]/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none'></div>
 
                       {/* Top Badges */}
                       <div className='absolute top-3 left-3 right-3 flex items-center justify-between'>

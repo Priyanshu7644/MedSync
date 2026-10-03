@@ -3,6 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { AppContext } from '../context/AppContext';
 import axios from 'axios';
 import { toast } from 'react-toastify';
+import PageLoader from '../components/PageLoader';
+import LazyImage from '../components/LazyImage';
 
 const Appointment = () => {
   const { docId } = useParams();
@@ -121,14 +123,14 @@ const Appointment = () => {
     }
   }
 
-  if (!docInfo) return <div className='py-20 text-center text-[#202833]/70 dark:text-[#EAE0C8]/70'>Loading Doctor Data...</div>
+  if (!docInfo) return <PageLoader text="Loading doctor profile & consultation slots..." />
 
   return (
     <div className='py-6 text-[#202833] dark:text-[#EAE0C8] transition-colors'>
       {/* Doctor Details */}
       <div className='flex flex-col sm:flex-row gap-6 items-start'>
         <div className='w-full sm:max-w-72 bg-[#EAE0C8]/40 dark:bg-[#181E26] border border-[#202833]/15 dark:border-[#EAE0C8]/20 shadow-sm p-1'>
-          <img className='w-full h-72 object-cover object-top' src={docInfo.image} alt={docInfo.name} />
+          <LazyImage containerClassName='w-full h-72' className='w-full h-72 object-cover object-top' src={docInfo.image} alt={docInfo.name} />
         </div>
         <div className='flex-1 border border-[#202833]/15 dark:border-[#EAE0C8]/20 p-8 bg-white/95 dark:bg-[#181E26] shadow-sm transition-colors'>
           <p className='flex items-center gap-2 text-2xl md:text-3xl font-bold text-[#202833] dark:text-[#EAE0C8]'>

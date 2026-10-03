@@ -14,3 +14,39 @@ body {
   @apply bg-[#fef7e5] text-[#00311e] dark:bg-[#202833] dark:text-[#EAE0C8] transition-colors duration-300;
   font-family: 'Outfit', sans-serif;
 }
+
+@keyframes ecgPulse {
+  0% {
+    stroke-dashoffset: 400;
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 0.2;
+  }
+}
+
+@keyframes shimmerSlide {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-ecg {
+  stroke-dasharray: 400;
+  stroke-dashoffset: 400;
+  animation: ecgPulse 2.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.animate-shimmer {
+  animation: shimmerSlide 1.8s ease-in-out infinite;
+}

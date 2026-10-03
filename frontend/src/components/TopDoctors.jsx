@@ -1,6 +1,7 @@
 import React, { useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AppContext } from '../context/AppContext';
+import LazyImage from './LazyImage';
 
 const TopDoctors = () => {
   const navigate = useNavigate();
@@ -20,7 +21,12 @@ const TopDoctors = () => {
             {doctors.slice(0, 10).map((item, index) => (
                 <div onClick={() => navigate(`/appointment/${item._id}`)} className='group bg-white/90 dark:bg-[#181E26] border border-[#00311e]/15 dark:border-[#EAE0C8]/20 rounded-none overflow-hidden cursor-pointer shadow-sm hover:border-[#00311e] dark:hover:border-[#EAE0C8]/60 hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex flex-col' key={index}>
                     <div className='bg-[#fef7e5]/50 dark:bg-[#202833] relative overflow-hidden h-40 flex justify-center items-end border-b border-[#00311e]/10 dark:border-[#EAE0C8]/15 transition-colors'>
-                        <img className='w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500' src={item.image} alt={item.name} />
+                        <LazyImage 
+                          containerClassName='w-full h-full' 
+                          className='w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500' 
+                          src={item.image} 
+                          alt={item.name} 
+                        />
                     </div>
                     <div className='p-4 flex-1 flex flex-col'>
                         <div className='flex items-center gap-1.5 mb-2'>
